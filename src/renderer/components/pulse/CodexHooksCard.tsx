@@ -8,10 +8,10 @@ import doneExpression from '../../../../band-app/src/common/expressions/star/8.p
 import idleExpression from '../../../../band-app/src/common/expressions/sleep/4.png';
 
 const expressionExamples = [
-  { state: 'waiting', label: '等待处理', image: waitingExpression, name: 'smirk', description: '等待审核、补充信息或额度暂停时自动显示，短震＋长震连续六组，共十二下。双击可返回时间页。' },
-  { state: 'working', label: '正在工作', image: workingExpression, name: 'naughty', description: '任务执行中，双击时间页可查看。' },
-  { state: 'done', label: '任务完成', image: doneExpression, name: 'star', description: '完成时自动显示，连续长震四下，单次时长由手环决定。10 分钟后回到时间页。' },
-  { state: 'idle', label: '空闲待命', image: idleExpression, name: 'sleep', description: '空闲无灯，双击时间页可查看。' },
+  { state: 'waiting', label: '等待处理', image: waitingExpression, name: '生气', description: '等待审核、补充信息或额度暂停时自动显示生气表情，短震＋长震连续六组，共十二下。双击可返回时间页。' },
+  { state: 'working', label: '正在工作', image: workingExpression, name: 'wink', description: '任务执行中，双击时间页可查看 wink 表情。' },
+  { state: 'done', label: '任务完成', image: doneExpression, name: '星星眼', description: '完成时自动显示星星眼，连续长震四下，单次时长由手环决定。10 分钟后回到时间页。' },
+  { state: 'idle', label: '空闲待命', image: idleExpression, name: '睡觉', description: '空闲无灯，双击时间页可查看睡觉表情。' },
 ] as const;
 
 export function CodexHooksCard() {
@@ -72,7 +72,7 @@ export function CodexHooksCard() {
           <div><h5><span aria-hidden="true" />{item.label}</h5><p>{item.description}</p></div>
         </div>)}
       </div>
-      <p className="workspace-expression-example"><strong>例如</strong>让 Codex 修改一段代码，工作时可双击时间页查看 naughty。遇到审核会自动切到 smirk，在电脑端同意并恢复执行后返回时间页。任务完成后显示 star，10 分钟后自动返回。</p>
+      <p className="workspace-expression-example"><strong>例如</strong>让 Codex 修改一段代码，工作时可双击时间页查看 wink。遇到审核会自动切到生气表情，在电脑端同意并恢复执行后返回时间页。任务完成后显示星星眼，10 分钟后自动返回。</p>
       <p className="workspace-expression-gesture">双击时间页与表情页可来回切换。等待处理时自动显示表情，双击可提前返回时间页。保持表情页时，任务恢复后自动返回。</p>
     </div>
   </section>;
