@@ -9,6 +9,7 @@
 
 <p align="center">
   <a href="#使用说明">使用说明</a> ·
+  <a href="#版本更新">版本更新</a> ·
   <a href="docs/BUILDING.md">源码构建</a> ·
   <a href="https://github.com/sthess548/Nexo/issues">反馈问题</a>
 </p>
@@ -17,6 +18,28 @@
   EXE 下载地址　[https://github.com/sthess548/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe](https://github.com/sthess548/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe)
 - **小米手环横屏桌搭**。需要电脑端 EXE 和手环 RPK，连接后联动使用。<br>
   RPK 下载地址　[https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Band-1.0.0.rpk](https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Band-1.0.0.rpk)
+
+## 版本更新
+
+当前电脑端为 **1.0.1**，配套手环快应用为 **1.0.0**。
+
+### 1.0.1 · 电脑端当前版本
+
+- **状态灯判断**。修复长命令运行时误亮红灯。明确提问或人工审核立即亮红灯，自动审批保持黄灯，审批方式未知时采用十秒兜底。
+- **手环配置**。向导精简为导入资料、连接手环、安装应用三步，安装后点击“完成”。
+- **安装与更新**。修复手环应用安装完成后仍阻止电脑端更新、无法再次安装的问题。设置按钮和“关于 Nexo”增加新版本红点提示。
+- **界面调整**。缩小打赏页面的微信、支付宝二维码。
+
+[下载 EXE 1.0.1](https://github.com/sthess548/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe) · [查看发布页](https://github.com/sthess548/Nexo/releases/tag/v1.0.1)
+
+### 1.0.0 · 首次发布
+
+- 额度监控、人民币花费估算与 Codex 红黄绿任务状态联动。
+- Windows 桌面悬浮窗支持外观、大小、透明度和四向停靠，可独立使用。
+- 小米手环横屏桌搭支持前台常亮、表情联动、震动提醒及无振动开关。
+- 支持开机自启动、托盘后台运行、手环快应用管理与覆盖升级。
+
+[下载 RPK 1.0.0](https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Band-1.0.0.rpk) · [查看发布页](https://github.com/sthess548/Nexo/releases/tag/v1.0.0)
 
 ## 主要功能
 
