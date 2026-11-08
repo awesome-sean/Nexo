@@ -46,17 +46,9 @@ var APPROVAL_GRACE_MS = 1e4;
 function isTrafficState(value) {
   return value === "idle" || value === "working" || value === "waiting" || value === "done";
 }
-function workspaceKey(workspace) {
-  if (!workspace) return null;
-  let key = workspace.trim().replace(/\\/g, "/");
-  if (!/^(?:[a-z]:\/|\/)/i.test(key) || /(?:^|\/)\.{1,2}(?:\/|$)/.test(key)) return null;
-  if (/^[a-z]:\//i.test(key) || key.startsWith("//")) key = key.toLowerCase();
-  return key.replace(/\/+/g, "/").replace(/\/$/, "");
-}
 function aggregateTraffic(tasks, now = Date.now()) {
   const counts = { idle: 0, working: 0, waiting: 0, done: 0 };
   let expiresAt = null;
-  const projects = [];
   for (const task of tasks) {
     if (task.state === "done") {
       const expiry = task.updatedAt + DONE_DURATION_MS;
@@ -65,23 +57,9 @@ function aggregateTraffic(tasks, now = Date.now()) {
     }
     const awaitingApproval = task.state === "waiting" && task.waitReason === "approval" && (task.approvalsReviewer === "auto_review" || task.approvalsReviewer !== "user" && now - task.updatedAt < APPROVAL_GRACE_MS);
     counts[awaitingApproval ? "working" : task.state]++;
-    const workspace = workspaceKey(task.workspace);
-    if (workspace && task.id === task.sessionId && typeof task.activeSince === "number" && Number.isFinite(task.activeSince) && task.activeSince <= task.updatedAt) {
-      projects.push({ task, workspace, startedAt: task.activeSince });
-    }
   }
   const state = counts.waiting ? "waiting" : counts.working ? "working" : counts.done ? "done" : "idle";
-  let mixedExpiresAt = 0;
-  if (state === "working") {
-    const working = projects.filter((project) => project.task.state === "working");
-    for (const completed of projects.filter((project) => project.task.state === "done")) {
-      const stillWorking = working.some((active) => active.workspace === completed.workspace || active.workspace.startsWith(completed.workspace + "/") || completed.workspace.startsWith(active.workspace + "/"));
-      if (stillWorking) continue;
-      const overlapping = working.some((active) => active.task.sessionId !== completed.task.sessionId && active.startedAt < completed.task.updatedAt);
-      if (overlapping) mixedExpiresAt = Math.max(mixedExpiresAt, completed.task.updatedAt + DONE_DURATION_MS);
-    }
-  }
-  return { state, counts, sampledAt: now, expiresAt: state === "done" ? expiresAt : state === "working" ? mixedExpiresAt : null };
+  return { state, counts, sampledAt: now, expiresAt: state === "done" ? expiresAt : state === "working" ? 0 : null };
 }
 function applyTrafficEvent(tasks, event) {
   if (event.clear) {
@@ -133,14 +111,12 @@ function applyTrafficEvent(tasks, event) {
     waitReason = current?.waitReason;
   }
   const source = current?.source === "hook" && event.source === "session" ? "hook" : event.source;
-  const activeSince = !stale && state === "working" && (typeof current?.activeSince !== "number" || current.state === "idle" || current.state === "done") ? event.at : current?.activeSince;
   tasks.set(event.id, {
     id: event.id,
     sessionId: event.sessionId,
     state,
     source,
     updatedAt: Math.max(current?.updatedAt || 0, event.at),
-    activeSince,
     workspace: event.workspace ?? current?.workspace ?? tasks.get(event.sessionId)?.workspace,
     waitReason: state === "waiting" ? waitReason : void 0,
     approvalsReviewer: current?.approvalsReviewer ?? tasks.get(event.sessionId)?.approvalsReviewer,

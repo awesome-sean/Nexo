@@ -694,22 +694,12 @@ export default {
     if (state === 'done' && typeof lastTraffic.expiresAt === 'number' && typeof lastTraffic.sampledAt === 'number' && lastTraffic.sampledAt + elapsed >= lastTraffic.expiresAt) state = 'idle';
     return state;
   },
-  getTrafficLightState() {
-    const state = this.getTrafficState();
-    const counts = lastTraffic && lastTraffic.counts;
-    const serverNow = lastTraffic && typeof lastTraffic.sampledAt === 'number' ? lastTraffic.sampledAt + Date.now() - lastTrafficAt : Date.now();
-    if (state === 'working' && counts && counts.working > 0 && counts.done > 0 &&
-        (typeof lastTraffic.expiresAt !== 'number' || serverNow < lastTraffic.expiresAt)) {
-      return Math.floor(serverNow / 1000) % 2 === 0 ? 'working' : 'done';
-    }
-    return state;
-  },
   updateTraffic() {
     if (completionViewUntil > 0 && Date.now() >= completionViewUntil) {
       completionViewUntil = 0;
       this.setExpressionView(false);
     }
-    const state = this.getTrafficLightState();
+    const state = this.getTrafficState();
     this.updateExpression(this.getExpressionState());
     this.statusDot = ROOT + 'status-' + state + '.png';
   },

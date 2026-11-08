@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import {spawn} from 'node:child_process';
-import {aggregateTraffic,applyTrafficEvent,hookTrafficEvent,DONE_DURATION_MS,APPROVAL_GRACE_MS,getTrafficLightState,hasMixedTraffic} from '../src/common/codex-traffic.ts';
+import {aggregateTraffic,applyTrafficEvent,hookTrafficEvent,DONE_DURATION_MS,APPROVAL_GRACE_MS,getTrafficLightState} from '../src/common/codex-traffic.ts';
 import {enqueueTraffic,readTrafficSnapshot,CodexTrafficService} from '../src/main/services/codex-traffic-store.ts';
 import {CodexHookInstaller,CODEX_HOOK_EVENTS} from '../src/main/services/codex-hook-install.ts';
 
@@ -165,81 +165,41 @@ test('fast-forwarded JSONL files recover their own metadata ID when new events a
 }));
 
 
-test('confirmed overlapping projects alternate visually, with red priority and completion expiry',()=>{
+test('running tasks stay yellow even with recent completions from other projects',()=>{
  const tasks=[
-  {...task('building','working',1000),workspace:'C:/Projects/Building',activeSince:500},
-  {...task('finished','done',1000),workspace:'C:/Projects/Finished',activeSince:600},
+  {...task('first','working',1000),workspace:'C:/Projects/First'},
+  {...task('second','working',1000),workspace:'C:/Projects/Second'},
+  {...task('old','done',1000),workspace:'C:/Projects/Old',activeSince:500},
  ];
- const mixed=aggregateTraffic(tasks,2000);
- assert.equal(mixed.state,'working');
- assert.equal(mixed.expiresAt,1000+DONE_DURATION_MS);
- assert.equal(hasMixedTraffic(mixed,2000),true);
- assert.equal(getTrafficLightState(mixed,2000),'working');
- assert.equal(getTrafficLightState(mixed,3000),'done');
- assert.equal(getTrafficLightState(mixed,4000),'working');
- assert.equal(getTrafficLightState(mixed,1000+DONE_DURATION_MS),'working');
- const red=aggregateTraffic([...tasks,task('question','waiting',1000)],2000);
- assert.equal(getTrafficLightState(red,2000),'waiting');
- assert.equal(getTrafficLightState(red,3000),'waiting');
- assert.equal(getTrafficLightState(aggregateTraffic([tasks[1]],2000),3000),'done');
- assert.equal(getTrafficLightState(aggregateTraffic([tasks[0]],2000),3000),'working');
- assert.equal(getTrafficLightState(aggregateTraffic(tasks,1000+DONE_DURATION_MS),1000+DONE_DURATION_MS),'working');
-});
-
-test('single-project chats and subagents never trigger mixed lights',()=>{
- const working={...task('building','working'),workspace:'C:/Projects/Nexo',activeSince:500};
- const done={...task('finished','done'),workspace:'C:/Projects/Nexo',activeSince:600};
- for(const workspace of ['C:/Projects/Nexo','c:\\projects\\NEXO\\','C:/Projects/Nexo/src','C:/Projects']){
-  const snapshot=aggregateTraffic([working,{...done,workspace}],2000);
-  assert.equal(snapshot.expiresAt,0,workspace);
-  for(const now of [2000,3000,4000]) assert.equal(getTrafficLightState(snapshot,now),'working',workspace);
+ let snapshot=aggregateTraffic(tasks,2000);
+ assert.equal(snapshot.counts.working,2);
+ assert.equal(snapshot.counts.done,1);
+ assert.equal(snapshot.expiresAt,0);
+ for(const now of [2000,3000,4000,5000]){
+  snapshot=aggregateTraffic(tasks,now);
+  assert.equal(getTrafficLightState(snapshot),'working');
  }
- const child={...done,id:'building:child',sessionId:'building',workspace:'C:/Projects/Other'};
- assert.equal(hasMixedTraffic(aggregateTraffic([working,child],2000),2000),false);
- const other={...working,id:'other',sessionId:'other',workspace:'C:/Projects/Other'};
- assert.equal(hasMixedTraffic(aggregateTraffic([working,done,other],2000),2000),false);
+ tasks[1].state='done';
+ assert.equal(getTrafficLightState(aggregateTraffic(tasks,5000)),'working');
+ tasks[0].state='done';
+ assert.equal(getTrafficLightState(aggregateTraffic(tasks,5000)),'done');
+ assert.equal(getTrafficLightState(aggregateTraffic(tasks,1000+DONE_DURATION_MS)),'idle');
 });
 
-test('unknown projects, legacy records and non-overlapping historical completion stay yellow',()=>{
- const working={...task('building','working'),workspace:'C:/Projects/Building',activeSince:500};
- const done={...task('finished','done'),workspace:'C:/Projects/Finished',activeSince:600};
- const cases=[
-  [working,{...done,workspace:undefined}],
-  [{...working,workspace:undefined},done],
-  [working,{...done,workspace:'relative/project'}],
-  [working,{...done,workspace:'C:/Projects/../Other'}],
-  [working,{...done,activeSince:undefined}],
-  [{...working,activeSince:undefined},done],
-  [{...working,activeSince:1000},done],
-  [{...working,updatedAt:2000,activeSince:1500},done],
- ];
- for(const tasks of cases){
-  const snapshot=aggregateTraffic(tasks,3000);
-  assert.equal(snapshot.counts.working,1);
-  assert.equal(snapshot.counts.done,1);
-  assert.equal(snapshot.expiresAt,0);
-  assert.equal(getTrafficLightState(snapshot,3000),'working');
+test('attention keeps red priority and legacy mixed snapshots render the logical state',()=>{
+ const tasks=[task('active','working'),task('finished','done'),task('question','waiting')];
+ assert.equal(getTrafficLightState(aggregateTraffic(tasks,2000)),'waiting');
+ for(const expiresAt of [null,0,9000]){
+  const snapshot={state:'working',counts:{working:1,done:1,waiting:0,idle:0},sampledAt:2000,expiresAt};
+  assert.equal(getTrafficLightState(snapshot),'working');
  }
- assert.equal(hasMixedTraffic({state:'working',counts:{working:1,done:1},expiresAt:null},3000),false);
+ assert.equal(getTrafficLightState(),'idle');
 });
 
-test('progress preserves project and current-run start while a new run resets its start',()=>{
+test('progress preserves the project when subsequent Hook payloads omit cwd',()=>{
  const tasks=new Map();
- const send=(name,at,payload={})=>applyTrafficEvent(tasks,hookTrafficEvent(name,{session_id:'project',...payload},at));
- send('UserPromptSubmit',0,{cwd:'C:/Projects/Nexo'});
- send('PreToolUse',1000);
- assert.equal(tasks.get('project').activeSince,0);
+ applyTrafficEvent(tasks,hookTrafficEvent('UserPromptSubmit',{session_id:'project',cwd:'C:/Projects/Nexo'},1000));
+ applyTrafficEvent(tasks,hookTrafficEvent('PreToolUse',{session_id:'project'},2000));
  assert.equal(tasks.get('project').workspace,'C:/Projects/Nexo');
- send('PermissionRequest',2000);
- send('PostToolUse',3000);
- assert.equal(tasks.get('project').activeSince,0);
- send('Stop',4000,{last_assistant_message:'Done.'});
- assert.equal(tasks.get('project').activeSince,0);
- send('UserPromptSubmit',5000);
- assert.equal(tasks.get('project').activeSince,5000);
- send('PreToolUse',4500);
- assert.equal(tasks.get('project').activeSince,5000);
- send('SessionStart',6000);
- send('UserPromptSubmit',7000);
- assert.equal(tasks.get('project').activeSince,7000);
+ assert.equal(tasks.get('project').state,'working');
 });

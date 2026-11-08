@@ -3,7 +3,6 @@ export type TrafficSource = 'hook' | 'cli' | 'session';
 export type TrafficWaitReason = 'approval' | 'input' | 'quota';
 export const DONE_DURATION_MS = 10 * 60_000;
 export const APPROVAL_GRACE_MS = 10_000;
-export const MIXED_TRAFFIC_PHASE_MS = 1000;
 export const TRAFFIC_COLORS: Record<TrafficState, string> = {
   idle: 'transparent', working: '#F2CF4A', waiting: '#F04452', done: '#24CE87',
 };
@@ -16,7 +15,6 @@ export interface TrafficTask {
   state: TrafficState;
   source: TrafficSource;
   updatedAt: number;
-  activeSince?: number;
   workspace?: string;
   waitReason?: TrafficWaitReason;
   pendingInputIds?: string[];
@@ -30,13 +28,7 @@ export interface TrafficSnapshot {
   counts: Record<TrafficState, number>;
   expiresAt: number | null;
 }
-export function hasMixedTraffic(traffic?: TrafficSnapshot, now = Date.now()): boolean {
-  return traffic?.state === 'working' && traffic.counts?.working > 0 && traffic.counts?.done > 0
-    && typeof traffic.expiresAt === 'number' && now < traffic.expiresAt;
-}
-/** Visual alternation must not create task transitions, expression switches or repeated alerts. */
-export function getTrafficLightState(traffic?: TrafficSnapshot, now = Date.now()): TrafficState {
-  if (hasMixedTraffic(traffic, now)) return Math.floor(now / MIXED_TRAFFIC_PHASE_MS) % 2 === 0 ? 'working' : 'done';
+export function getTrafficLightState(traffic?: TrafficSnapshot): TrafficState {
   return traffic?.state ?? 'idle';
 }
 export interface TrafficEvent {
@@ -58,18 +50,9 @@ export interface TrafficEvent {
 export function isTrafficState(value: unknown): value is TrafficState {
   return value === 'idle' || value === 'working' || value === 'waiting' || value === 'done';
 }
-function workspaceKey(workspace?: string): string | null {
-  if (!workspace) return null;
-  let key = workspace.trim().replace(/\\/g, '/');
-  // Relative or unresolved paths do not establish a separate project.
-  if (!/^(?:[a-z]:\/|\/)/i.test(key) || /(?:^|\/)\.{1,2}(?:\/|$)/.test(key)) return null;
-  if (/^[a-z]:\//i.test(key) || key.startsWith('//')) key = key.toLowerCase();
-  return key.replace(/\/+/g, '/').replace(/\/$/, '');
-}
 export function aggregateTraffic(tasks: Iterable<TrafficTask>, now = Date.now()): TrafficSnapshot {
   const counts = {idle:0, working:0, waiting:0, done:0};
   let expiresAt: number | null = null;
-  const projects: {task: TrafficTask; workspace: string; startedAt: number}[] = [];
   for (const task of tasks) {
     if (task.state === 'done') {
       const expiry = task.updatedAt + DONE_DURATION_MS;
@@ -80,29 +63,10 @@ export function aggregateTraffic(tasks: Iterable<TrafficTask>, now = Date.now())
     const awaitingApproval = task.state === 'waiting' && task.waitReason === 'approval'
       && (task.approvalsReviewer === 'auto_review' || (task.approvalsReviewer !== 'user' && now - task.updatedAt < APPROVAL_GRACE_MS));
     counts[awaitingApproval ? 'working' : task.state]++;
-    const workspace = workspaceKey(task.workspace);
-    if (workspace && task.id === task.sessionId && typeof task.activeSince === 'number'
-      && Number.isFinite(task.activeSince) && task.activeSince <= task.updatedAt) {
-      projects.push({task, workspace, startedAt:task.activeSince});
-    }
   }
   const state = counts.waiting ? 'waiting' : counts.working ? 'working' : counts.done ? 'done' : 'idle';
-  let mixedExpiresAt = 0;
-  if (state === 'working') {
-    const working = projects.filter(project => project.task.state === 'working');
-    for (const completed of projects.filter(project => project.task.state === 'done')) {
-      // A finished chat does not mean its project finished while another chat there is active.
-      const stillWorking = working.some(active => active.workspace === completed.workspace
-        || active.workspace.startsWith(completed.workspace + '/')
-        || completed.workspace.startsWith(active.workspace + '/'));
-      if (stillWorking) continue;
-      const overlapping = working.some(active => active.task.sessionId !== completed.task.sessionId
-        && active.startedAt < completed.task.updatedAt);
-      if (overlapping) mixedExpiresAt = Math.max(mixedExpiresAt, completed.task.updatedAt + DONE_DURATION_MS);
-    }
-  }
-  // A zero deadline also suppresses alternation in existing band builds that use this field.
-  return {state, counts, sampledAt:now, expiresAt:state === 'done' ? expiresAt : state === 'working' ? mixedExpiresAt : null};
+  // Zero suppresses the removed alternation behavior on previously installed band builds.
+  return {state, counts, sampledAt:now, expiresAt:state === 'done' ? expiresAt : state === 'working' ? 0 : null};
 }
 export function applyTrafficEvent(tasks: Map<string, TrafficTask>, event: TrafficEvent): void {
   if (event.clear) { for (const [id,task] of tasks) if(task.updatedAt<=event.at) tasks.delete(id); return; }
@@ -145,10 +109,7 @@ export function applyTrafficEvent(tasks: Map<string, TrafficTask>, event: Traffi
     state = current?.state || 'working'; waitReason = current?.waitReason;
   }
   const source = current?.source === 'hook' && event.source === 'session' ? 'hook' : event.source;
-  const activeSince = !stale && state === 'working'
-    && (typeof current?.activeSince !== 'number' || current.state === 'idle' || current.state === 'done')
-    ? event.at : current?.activeSince;
-  tasks.set(event.id, {id:event.id, sessionId:event.sessionId, state, source, updatedAt:Math.max(current?.updatedAt || 0, event.at), activeSince,
+  tasks.set(event.id, {id:event.id, sessionId:event.sessionId, state, source, updatedAt:Math.max(current?.updatedAt || 0, event.at),
     workspace:event.workspace ?? current?.workspace ?? tasks.get(event.sessionId)?.workspace,
     waitReason:state === 'waiting' ? waitReason : undefined,approvalsReviewer:current?.approvalsReviewer ?? tasks.get(event.sessionId)?.approvalsReviewer,
     pendingInputIds:pending.size ? [...pending] : undefined,

@@ -1,8 +1,7 @@
 import React, { useRef } from 'react';
 import type { MinibarState } from '../../../common/types';
 import type { CustomAgentSummary } from '../../../common/custom-agents';
-import { hasMixedTraffic, TRAFFIC_LABELS } from '../../../common/codex-traffic';
-import { useTrafficLightState } from '../../hooks/useTrafficLightState';
+import { getTrafficLightState, TRAFFIC_LABELS } from '../../../common/codex-traffic';
 import { quotaUsageColor } from '../../../common/quota-colors';
 import { CAPSULE_GUTTER, CAPSULE_THICKNESS, getTrafficCapsuleLength } from '../../../common/minibar-layout';
 import { isHorizontalDock, type DockSide } from '../../../main/services/minibar-geometry';
@@ -47,8 +46,8 @@ export function MiniBarDock({ quotas, traffic, showStatusText = true, interactiv
   const horizontal = isHorizontalDock(dockSide);
   const pointerStart = useRef({ x: 0, y: 0 });
   const length = getTrafficCapsuleLength(showStatusText);
-  const state = useTrafficLightState(traffic);
-  const taskLabel = hasMixedTraffic(traffic) ? '部分任务已完成，其他任务正在工作' : TRAFFIC_LABELS[traffic?.state ?? 'idle'];
+  const state = getTrafficLightState(traffic);
+  const taskLabel = TRAFFIC_LABELS[state];
   const remaining = toRemainingPercent(quotas?.codex?.pct5h);
   const ringColor = quotaUsageColor(quotas?.codex?.pct5h);
   const svgLength = showStatusText ? 537 : 485;
