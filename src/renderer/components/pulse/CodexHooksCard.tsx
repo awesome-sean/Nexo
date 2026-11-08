@@ -57,7 +57,7 @@ export function CodexHooksCard() {
     </div>
     {notice && <p className="nexo-hook-guide" role="status">{notice}</p>}
     <div className="nexo-traffic-legend"><span data-state="waiting">红灯 · 等待处理 / 额度暂停</span><span data-state="working">黄灯 · 正在工作</span><span data-state="done">绿灯 · 最近完成</span><span>空闲 · 无灯</span></div>
-    <p className="nexo-hook-guide">并行任务中有任务完成时，黄绿灯每秒交替，完成提示保留十分钟。等待处理优先显示红灯。</p>
+    <p className="nexo-hook-guide">确认不同项目同时运行且其中一个已完成时，黄绿灯每秒交替。单项目或无法确认时保持黄灯，全部完成后亮绿灯。等待处理优先显示红灯。</p>
     <BandVibrationSettings />
     <details className="workspace-hook-help">
       <summary>如何启用状态联动<ChevronDown size={15} /></summary>

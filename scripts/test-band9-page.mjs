@@ -530,3 +530,18 @@ test('mixed work alternates the band dot without repeating vibration or expressi
  time(now+1000);p.updateTraffic();assert.match(p.statusDot,/status-waiting.png$/);
  p.onHide();
 });
+
+test('single-project snapshot stays yellow on the existing band page despite recent completion counts',()=>{
+ const {context,page:p,vibrations}=page();
+ vm.runInContext('Date.now = () => 2000000',context);
+ p.onShow();
+ p.receiveTraffic({state:'working',counts:{working:1,done:1,waiting:0,idle:0},sampledAt:2000000,expiresAt:0});
+ for(let i=0;i<6;i++){
+  vm.runInContext('Date.now = () => '+(2000000+i*1000),context);
+  p.updateTraffic();
+  assert.match(p.statusDot,/status-working.png$/);
+  assert.equal(p.expressionName,'naughty');
+ }
+ assert.equal(vibrations.length,0);
+ p.onHide();
+});
