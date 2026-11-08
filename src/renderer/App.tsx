@@ -39,9 +39,24 @@ export function App() {
   const [setupStartIndex, setSetupStartIndex] = useState(0);
   const [errors, setErrors] = useState<PulseErrorEntry[]>([]);
   const [core, setCore] = useState<PulseCoreState | null>(null);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
   const band = useBandConnection();
   const { state: quota, updatedAt, loading, refreshing, refresh } = useQuotaState();
   const display = useQuotaDisplay(quota);
+
+  useEffect(() => {
+    if (screen === 'minibar') return;
+    let active = true;
+    const check = async () => {
+      try {
+        const result = await window.pulse?.checkUpdate();
+        if (active && result?.ok) setUpdateAvailable(!!result.updateAvailable);
+      } catch { /* Retain the last successful update result while offline. */ }
+    };
+    void check();
+    const timer = setInterval(() => void check(), 30 * 60_000);
+    return () => { active = false; clearInterval(timer); };
+  }, [screen]);
 
   useEffect(() => window.pulse?.onOpenMiniBarSettings?.(() => {
     setPage('floating');
@@ -106,7 +121,7 @@ export function App() {
 
   return <div className="nexo-app nexo-app--workspace w-full h-full flex flex-col text-[var(--text-primary)] overflow-hidden transition-colors duration-200">
     <div className="workspace-fixed-header">
-      <TopBar theme={theme} onThemeChange={changeTheme} onNavigate={navigate} settingsActive={!mainPage} />
+      <TopBar theme={theme} onThemeChange={changeTheme} onNavigate={navigate} settingsActive={!mainPage} updateAvailable={updateAvailable} />
       <div className="workspace-fixed-toolbar">
         <div className="workspace-toolbar">
           {mainPage ? <nav className="workspace-tabs" aria-label="工作台">
@@ -122,7 +137,7 @@ export function App() {
         {mainPage && <QuotaSummary display={display} />}
         {page === 'floating' && <FloatingWindowPage quota={quota} embedded />}
         {page === 'band' && <BandDeskPage quota={quota} display={display} connection={band} setupOpen={showSetup} onStartSetup={startSetup} />}
-        {!mainPage && <SettingsHub section={page as SettingsSection} onNavigate={navigate}>
+        {!mainPage && <SettingsHub section={page as SettingsSection} onNavigate={navigate} updateAvailable={updateAvailable} onUpdateAvailable={setUpdateAvailable}>
           {page === 'settings' && <SettingsPage />}
           {page === 'diagnostics' && <DiagnosticsScreen daemon={core?.daemon ?? null} connection={core?.connection ?? {state:'disconnected'}} errors={errors} onClearErrors={clearErrors} updatedAt={updatedAt} onRefresh={refresh} />}
         </SettingsHub>}

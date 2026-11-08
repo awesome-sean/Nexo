@@ -231,8 +231,7 @@ ipcMain.handle('pulse:install-update', async () => {
   if (startingUpdate) return { ok: true };
   try {
     if (!app.isPackaged || process.platform !== 'win32') throw new Error('请在已安装的 Windows 版 Nexo 中使用覆盖更新');
-    const session = appInstallService.getSession();
-    if (session && ['preparing','transferring','verifying'].includes(session.status)) throw new Error('请等待手环应用安装完成后再更新 Nexo');
+    if (appInstallService.hasActiveInstallation()) throw new Error('请等待手环应用安装完成后再更新 Nexo');
     startingUpdate = true;
     await launchUpdate(desktopUpdate.verifiedInstaller());
     setImmediate(() => quitPulse());

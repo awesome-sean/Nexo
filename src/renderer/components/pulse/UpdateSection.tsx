@@ -5,7 +5,7 @@ import { UPDATE_RELEASES_URL, UPDATE_REPOSITORY } from '../../../common/update-s
 
 type Phase = 'checking' | 'unpublished' | 'latest' | 'available' | 'downloading' | 'downloaded' | 'installing' | 'error';
 
-export function UpdateSection() {
+export function UpdateSection({ onUpdateAvailable }: { onUpdateAvailable?: (available: boolean) => void } = {}) {
   const [phase, setPhase] = useState<Phase>('checking');
   const [latest, setLatest] = useState('');
   const [canDownload, setCanDownload] = useState(false);
@@ -22,6 +22,7 @@ export function UpdateSection() {
       const result = await window.pulse?.checkUpdate();
       if (!alive.current) return;
       if (!result?.ok) throw new Error(result?.error || '检查更新失败');
+      onUpdateAvailable?.(!!result.updateAvailable);
       setLatest(result.latestVersion || '');
       setCanDownload(!!result.canDownload);
       setReleaseUrl(result.releaseUrl || UPDATE_RELEASES_URL);

@@ -180,6 +180,14 @@ export class AppInstallService {
     };
   }
 
+  hasActiveInstallation(): boolean {
+    const session = this.session;
+    return !!session
+      && ['preparing', 'transferring', 'verifying'].includes(session.status)
+      && session.coreStatus !== 'completed'
+      && session.coreStatus !== 'installed';
+  }
+
   /**
    * 读取内置手环端安装包信息（版本号来自真实 manifest，不写死）。
    * 结果做进程内缓存，避免每次渲染都解压 asar。
@@ -241,12 +249,7 @@ export class AppInstallService {
   }
 
   createSession(req: InstallPrepareRequest): InstallPrepareResult {
-    if (
-      this.session &&
-      (this.session.status === 'preparing' ||
-        this.session.status === 'transferring' ||
-        this.session.status === 'verifying')
-    ) {
+    if (this.hasActiveInstallation()) {
       throw new Error('已有正在进行的安装会话');
     }
     if (!req.fileSize || typeof req.fileSize !== 'number' || req.fileSize <= 0) {
@@ -317,12 +320,7 @@ export class AppInstallService {
     filePath: string,
     chunkSize: number = DEFAULT_CHUNK_SIZE
   ): Promise<InstallPrepareResult> {
-    if (
-      this.session &&
-      (this.session.status === 'preparing' ||
-        this.session.status === 'transferring' ||
-        this.session.status === 'verifying')
-    ) {
+    if (this.hasActiveInstallation()) {
       throw new Error('已有正在进行的安装会话');
     }
 

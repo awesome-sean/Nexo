@@ -214,3 +214,32 @@ test('8. 全生命周期绝不会调用 core', async () => {
     child_process.execFile = originalExecFile;
   }
 });
+
+
+test('finished device results release the update lock and allow another installation', async () => {
+  for (const coreStatus of ['completed','installed','unknown','failed']) {
+    const service=new AppInstallService({commit:async()=>({status:coreStatus})});
+    const request={fileSize:256,chunkSize:256,hash:'test-hash'};
+    const prepared=service.createSession(request);
+    service.handleChunk({installId:prepared.installId,chunkIndex:0,chunkData:Buffer.alloc(256).toString('base64')});
+    assert.equal(service.hasActiveInstallation(),true);
+    await service.commit({installId:prepared.installId,expectedHash:request.hash});
+    assert.equal(service.hasActiveInstallation(),false,coreStatus+' must not block desktop updates');
+    assert.doesNotThrow(()=>service.createSession(request));
+  }
+});
+
+test('a genuine in-flight device verification keeps the update lock', async () => {
+  let finish;
+  const service=new AppInstallService({commit:()=>new Promise(resolve=>{finish=resolve;})});
+  assert.equal(service.hasActiveInstallation(),false);
+  const prepared=service.createSession({fileSize:256,chunkSize:256,hash:'test-hash'});
+  assert.equal(service.hasActiveInstallation(),true);
+  service.handleChunk({installId:prepared.installId,chunkIndex:0,chunkData:Buffer.alloc(256).toString('base64')});
+  const pending=service.commit({installId:prepared.installId,expectedHash:'test-hash'});
+  assert.equal(service.hasActiveInstallation(),true);
+  assert.throws(()=>service.createSession({fileSize:256,chunkSize:256,hash:'test-hash'}),/已有正在进行/);
+  finish({status:'completed'});
+  await pending;
+  assert.equal(service.hasActiveInstallation(),false);
+});

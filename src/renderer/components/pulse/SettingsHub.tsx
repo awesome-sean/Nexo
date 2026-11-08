@@ -14,12 +14,12 @@ const sections = [
   { id: 'about', label: '关于 Nexo', icon: Info },
 ] as const;
 
-export function SettingsHub({ section, onNavigate, children }: { section: SettingsSection; onNavigate: (section: SettingsSection) => void; children: ReactNode }) {
+export function SettingsHub({ section, onNavigate, children, updateAvailable, onUpdateAvailable }: { section: SettingsSection; onNavigate: (section: SettingsSection) => void; children: ReactNode; updateAvailable?: boolean; onUpdateAvailable?: (available: boolean) => void }) {
   return <div className="settings-hub">
     <aside className="settings-navigation">
       <h1>设置</h1>
       <nav aria-label="设置功能">
-        {sections.map(({ id, label, icon: Icon }) => <button type="button" key={id} aria-current={section === id ? 'page' : undefined} onClick={() => onNavigate(id)}><Icon size={20} strokeWidth={1.7} />{label}</button>)}
+        {sections.map(({ id, label, icon: Icon }) => <button type="button" key={id} aria-current={section === id ? 'page' : undefined} aria-label={id === 'about' && updateAvailable ? `${label}，有新版本` : label} onClick={() => onNavigate(id)}><Icon size={20} strokeWidth={1.7} />{label}{id === 'about' && updateAvailable && <span className="nexo-update-dot" aria-hidden="true" />}</button>)}
       </nav>
     </aside>
     <div className="settings-detail">
@@ -31,7 +31,7 @@ export function SettingsHub({ section, onNavigate, children }: { section: Settin
           <div className="settings-about-brand"><img src={appIcon} alt="" /><div><h3>{APP_NAME}</h3><p>桌面与手环，连接你的 Codex 任务。</p></div></div>
           <dl><div><dt>应用版本</dt><dd>{APP_VERSION}</dd></div><div><dt>运行平台</dt><dd>Windows</dd></div></dl>
         </section>
-        <UpdateSection />
+        <UpdateSection onUpdateAvailable={onUpdateAvailable} />
         <BandAppUpdateSection />
       </div>}
     </div>
