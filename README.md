@@ -4,8 +4,7 @@
     <img src="assets/desktop-mark.svg" width="88" height="88" alt="Nexo Logo" />
   </picture>
   <h1>Nexo</h1>
-  <p>把 ChatGPT/Codex 的额度和任务状态，放到 Windows 桌面与小米手环上。</p>
-  <p>可以单独使用桌面悬浮窗，也可以搭配小米手环，查看额度与任务提醒。</p>
+  <p>在 Windows 桌面或小米手环上，随时查看 ChatGPT/Codex 额度与任务状态。</p>
 </div>
 
 [下载 Windows 安装包](https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Setup-1.0.0.exe) · [下载手环快应用](https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Band-1.0.0.rpk) · [使用说明](#使用说明) · [源码构建](docs/BUILDING.md) · [反馈问题](https://github.com/sthess548/Nexo/issues)
