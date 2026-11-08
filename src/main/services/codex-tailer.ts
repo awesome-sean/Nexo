@@ -241,6 +241,12 @@ export class CodexSessionTailer {
       }
 
       const sessionId = context.sessionId || 'codex-active';
+      if (recordType === 'turn_context') {
+        if (payload.approvals_reviewer === 'user' || payload.approvals_reviewer === 'auto_review') {
+          this.sessionManager.updateSession(sessionId, 'codex', {approvalsReviewer:payload.approvals_reviewer,updatedAt:eventAt});
+        }
+        return;
+      }
       const pending: Set<string> = context.pendingInputs ||= new Set();
       const inputCalls: NonNullable<CodexContext['inputCalls']> = context.inputCalls ||= new Map();
       const update = (patch: Parameters<SessionManager['updateSession']>[2]) => {

@@ -11,13 +11,11 @@ import {
 import { DeviceImportStep } from './DeviceImportStep';
 import { ConnectBandStep } from './ConnectBandStep';
 import { InstallAppStep } from './InstallAppStep';
-import { VerifyQuotaStep, type QuotaVerifyOutcome } from './VerifyQuotaStep';
 
 export interface SetupWizardProps {
   onClose: () => void;
-  /** 完成向导时回报额度验证结果（deferred = 稍后验证，不代表已验证） */
-  onFinish?: (outcome?: QuotaVerifyOutcome) => void;
-  /** 打开时直接落在第几步（0-based）。用于"稍后验证"后回到第 4 步继续。 */
+  onFinish?: () => void;
+  /** 打开时直接落在第几步（0-based）。 */
   initialStepIndex?: number;
 }
 
@@ -35,7 +33,6 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onClose, onFinish, ini
       import_log: 'pending',
       connect_band: 'pending',
       install_app: 'pending',
-      verify_quota: 'pending',
     };
     const start = typeof initialStepIndex === 'number' ? initialStepIndex : 0;
     const startId = INITIAL_SETUP_STEPS[start]?.id;
@@ -145,8 +142,8 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onClose, onFinish, ini
   // 这几个回调会作为 prop 交给子步骤。不包 useCallback 的话每次渲染都是新函数，
   // 子步骤里把它放进 effect 依赖就会跟着无限重渲染（见 ConnectBandStep 的说明）。
   const handleFinish = useCallback(
-    (outcome?: QuotaVerifyOutcome) => {
-      onFinish?.(outcome);
+    () => {
+      onFinish?.();
       onClose();
     },
     [onFinish, onClose]
@@ -169,33 +166,17 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onClose, onFinish, ini
     setStepExecution((prev) => ({ ...prev, install_app: 'success' }));
   }, []);
 
-  const handleVerifyQuotaComplete = useCallback(
-    (outcome: QuotaVerifyOutcome) => {
-      if (outcome === 'confirmed') {
-        setStepExecution((prev) => ({ ...prev, verify_quota: 'success' }));
-        handleFinish('confirmed');
-      } else {
-        setStepExecution((prev) => ({
-          ...prev,
-          verify_quota: prev.verify_quota === 'success' ? 'success' : 'skipped',
-        }));
-        handleFinish('deferred');
-      }
-    },
-    [handleFinish]
-  );
-
   const handleNext = () => {
     setStepError(null);
     if (isLastStep) {
       if (isCurrentSuccess) {
-        handleFinish('confirmed');
+        handleFinish();
       } else {
         setStepExecution((prev) => ({
           ...prev,
           [currentStep.id]: prev[currentStep.id] === 'success' ? 'success' : 'skipped',
         }));
-        handleFinish('deferred');
+        handleFinish();
       }
     } else {
       // 未确认成功的步骤在跳往下一步时标记为已跳过
@@ -238,7 +219,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onClose, onFinish, ini
     if (step.id === 'import_log') return <DeviceImportStep onSuccess={handleImportLogSuccess} />;
     if (step.id === 'connect_band') return <ConnectBandStep onSuccess={handleConnectBandSuccess} />;
     if (step.id === 'install_app') return <InstallAppStep onSuccess={handleInstallAppSuccess} />;
-    return <VerifyQuotaStep onComplete={handleVerifyQuotaComplete} />;
+    return null;
   };
 
   return createPortal(
@@ -261,7 +242,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onClose, onFinish, ini
         <div className="setup-footer">
           <button type="button" className="setup-back" disabled={isFirstStep} onClick={handlePrev}><ChevronLeft size={17} />上一步</button>
           <button type="button" className={isCurrentSuccess ? 'setup-next btn-primary' : 'setup-next'} onClick={handleNext}>
-            {isLastStep ? isCurrentSuccess ? '完成配置' : '稍后确认' : isCurrentSuccess ? '下一步' : '跳过此步'}{isLastStep ? null : <ChevronRight size={17} />}
+            {isLastStep ? '完成' : isCurrentSuccess ? '下一步' : '跳过此步'}{isLastStep ? null : <ChevronRight size={17} />}
           </button>
         </div>
       </div>

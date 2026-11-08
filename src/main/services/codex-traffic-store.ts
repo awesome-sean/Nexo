@@ -86,6 +86,15 @@ export class CodexTrafficService extends EventEmitter {
     }
     for (const session of sessions) {
       if (session.agent !== 'codex') continue;
+      // Read the reviewer from the real turn context, not the elapsed permission-check time.
+      if (session.approvalsReviewer) {
+        for (const task of this.tasks.values()) {
+          if (task.sessionId === session.id && task.source !== 'cli' && task.approvalsReviewer !== session.approvalsReviewer) {
+            task.approvalsReviewer = session.approvalsReviewer;
+            changed = true;
+          }
+        }
+      }
       const current = this.tasks.get(session.id);
       if (current && current.updatedAt >= session.updatedAt && !session.pendingInputIds?.length && !session.resolvedInputIds?.length && !session.clearPendingInputs) continue;
       const state = session.status === 'waiting' ? 'waiting' : session.status === 'completed' ? 'done' : session.status === 'thinking' || session.status === 'running_tool' ? 'working' : 'idle';
@@ -94,6 +103,8 @@ export class CodexTrafficService extends EventEmitter {
       if(current?.source === 'hook' && state !== 'working' && session.trafficWaitReason !== 'quota' && !explicitInput) continue;
       applyTrafficEvent(this.tasks,{id:session.id,sessionId:session.id,state,source:'session',at:session.updatedAt,workspace:session.cwd,waitReason:session.trafficWaitReason,
         inputOpened:session.pendingInputIds,inputResolved:session.resolvedInputIds,resetInputs:session.clearPendingInputs});
+      const updated = this.tasks.get(session.id);
+      if (updated && session.approvalsReviewer) updated.approvalsReviewer = session.approvalsReviewer;
       changed = true;
     }
     if (changed) { this.save(); this.publish(); }

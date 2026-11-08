@@ -8,7 +8,6 @@ test('Nexo user-facing views, reports and guides use the current brand', () => {
     'src/renderer/components/pulse/DiagnosticsScreen.tsx',
     'src/renderer/components/setup/InstallAppStep.tsx',
     'src/renderer/components/setup/SetupWizard.tsx',
-    'src/renderer/components/setup/VerifyQuotaStep.tsx',
     'src/renderer/components/setup/types.ts',
     'src/main/tray.ts',
     'src/main/services/support-report.ts',

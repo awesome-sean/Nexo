@@ -42,7 +42,7 @@ var import_node_crypto = require("node:crypto");
 
 // src/common/codex-traffic.ts
 var DONE_DURATION_MS = 10 * 6e4;
-var APPROVAL_GRACE_MS = 2e3;
+var APPROVAL_GRACE_MS = 1e4;
 function isTrafficState(value) {
   return value === "idle" || value === "working" || value === "waiting" || value === "done";
 }
@@ -55,7 +55,7 @@ function aggregateTraffic(tasks, now = Date.now()) {
       if (expiry <= now) continue;
       expiresAt = Math.max(expiresAt ?? 0, expiry);
     }
-    const awaitingApproval = task.state === "waiting" && task.waitReason === "approval" && now - task.updatedAt < APPROVAL_GRACE_MS;
+    const awaitingApproval = task.state === "waiting" && task.waitReason === "approval" && (task.approvalsReviewer === "auto_review" || task.approvalsReviewer !== "user" && now - task.updatedAt < APPROVAL_GRACE_MS);
     counts[awaitingApproval ? "working" : task.state]++;
   }
   const state = counts.waiting ? "waiting" : counts.working ? "working" : counts.done ? "done" : "idle";
@@ -119,6 +119,7 @@ function applyTrafficEvent(tasks, event) {
     updatedAt: Math.max(current?.updatedAt || 0, event.at),
     workspace: event.workspace,
     waitReason: state === "waiting" ? waitReason : void 0,
+    approvalsReviewer: current?.approvalsReviewer ?? tasks.get(event.sessionId)?.approvalsReviewer,
     pendingInputIds: pending.size ? [...pending] : void 0,
     resolvedInputIds: resolved.size ? [...resolved].slice(-128) : void 0,
     quotaPaused: quotaPaused || void 0

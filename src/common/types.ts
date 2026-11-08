@@ -21,6 +21,7 @@ export interface AgentSession {
   durationSeconds: number;
   error?: string;
   trafficWaitReason?: import('./codex-traffic').TrafficWaitReason;
+  approvalsReviewer?: 'user' | 'auto_review';
   pendingInputIds?: string[];
   resolvedInputIds?: string[];
   clearPendingInputs?: boolean;
@@ -83,7 +84,6 @@ export type SetupStepId =
   | 'import_log'
   | 'connect_band'
   | 'install_app'
-  | 'verify_quota'
   | 'prepare'
   | 'save_credentials'
   | 'windows_pairing'
@@ -180,21 +180,6 @@ export type InstallAppStatus =
 
 export interface InstallAppState {
   status: InstallAppStatus;
-  error?: SetupError;
-}
-
-// ============================================================================
-// 额度验证步骤数据契约 (Verify Quota Step Data Contract)
-// ============================================================================
-
-export type VerifyQuotaStatus =
-  | 'idle'
-  | 'checking'
-  | 'verified'
-  | 'error';
-
-export interface VerifyQuotaState {
-  status: VerifyQuotaStatus;
   error?: SetupError;
 }
 

@@ -2,7 +2,7 @@ export type TrafficState = 'idle' | 'working' | 'waiting' | 'done';
 export type TrafficSource = 'hook' | 'cli' | 'session';
 export type TrafficWaitReason = 'approval' | 'input' | 'quota';
 export const DONE_DURATION_MS = 10 * 60_000;
-export const APPROVAL_GRACE_MS = 2000;
+export const APPROVAL_GRACE_MS = 10_000;
 export const TRAFFIC_COLORS: Record<TrafficState, string> = {
   idle: 'transparent', working: '#F2CF4A', waiting: '#F04452', done: '#24CE87',
 };
@@ -20,6 +20,7 @@ export interface TrafficTask {
   pendingInputIds?: string[];
   resolvedInputIds?: string[];
   quotaPaused?: boolean;
+  approvalsReviewer?: 'user' | 'auto_review';
 }
 export interface TrafficSnapshot {
   state: TrafficState;
@@ -55,7 +56,9 @@ export function aggregateTraffic(tasks: Iterable<TrafficTask>, now = Date.now())
       if (expiry <= now) continue;
       expiresAt = Math.max(expiresAt ?? 0, expiry);
     }
-    const awaitingApproval = task.state === 'waiting' && task.waitReason === 'approval' && now - task.updatedAt < APPROVAL_GRACE_MS;
+    // PermissionRequest also fires for automatic review, which can outlast a long command.
+    const awaitingApproval = task.state === 'waiting' && task.waitReason === 'approval'
+      && (task.approvalsReviewer === 'auto_review' || (task.approvalsReviewer !== 'user' && now - task.updatedAt < APPROVAL_GRACE_MS));
     counts[awaitingApproval ? 'working' : task.state]++;
   }
   const state = counts.waiting ? 'waiting' : counts.working ? 'working' : counts.done ? 'done' : 'idle';
@@ -103,7 +106,7 @@ export function applyTrafficEvent(tasks: Map<string, TrafficTask>, event: Traffi
   }
   const source = current?.source === 'hook' && event.source === 'session' ? 'hook' : event.source;
   tasks.set(event.id, {id:event.id, sessionId:event.sessionId, state, source, updatedAt:Math.max(current?.updatedAt || 0, event.at), workspace:event.workspace,
-    waitReason:state === 'waiting' ? waitReason : undefined,
+    waitReason:state === 'waiting' ? waitReason : undefined,approvalsReviewer:current?.approvalsReviewer ?? tasks.get(event.sessionId)?.approvalsReviewer,
     pendingInputIds:pending.size ? [...pending] : undefined,
     resolvedInputIds:resolved.size ? [...resolved].slice(-128) : undefined,quotaPaused:quotaPaused || undefined});
 }

@@ -7,7 +7,7 @@ import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 import { buildSync } from 'esbuild';
 import { assistantNeedsInput, isBlockingInputTool, isQuotaPause, hookTrafficEvent, applyTrafficEvent, aggregateTraffic, APPROVAL_GRACE_MS } from '../src/common/codex-traffic.ts';
-import { CodexTrafficService } from '../src/main/services/codex-traffic-store.ts';
+import { CodexTrafficService, enqueueTraffic, readTrafficTasks } from '../src/main/services/codex-traffic-store.ts';
 
 test('direct questions and asynchronous question tools require attention', () => {
   assert.equal(assistantNeedsInput('修改已完成，你想试一下吗？'), true);
@@ -58,6 +58,8 @@ function questionHarness() {
   return {
     send(type,payload){tailer.parseLine(JSON.stringify({type,timestamp:new Date(++at).toISOString(),payload}),context);},
     state:()=>traffic.getSnapshot().state,
+    hook(name,payload={}){enqueueTraffic(hookTrafficEvent(name,{session_id:'question-thread',...payload},++at),directory);traffic.drain();},
+    tasks:()=>[...readTrafficTasks(directory).values()],
     reply(callId,index){return `<send_user_message_question_reply>\n${JSON.stringify([{questionItemId:JSON.stringify(['request_user_input_async',callId,index]),answer:'选项一'}])}\n</send_user_message_question_reply>`;},
     close(){tailer.stop();manager.dispose();traffic.stop();fs.rmSync(directory,{recursive:true,force:true});}
   };
@@ -228,4 +230,54 @@ test('horizontal highlights exactly match the new supplied SVGs', () => {
   assert.deepEqual(module.exports.TRAFFIC_HIGHLIGHTS.horizontal,expected.horizontal);
   assert.deepEqual(module.exports.TRAFFIC_HIGHLIGHTS.horizontalText,expected.horizontalText);
   assert.equal(createHash('sha256').update(fs.readFileSync('src/renderer/assets/gpt-floating.png')).digest('hex'),'711ef0f1664db1d99e1a37ff032878777253401a619fdc8e51a252e572b05cc4');
+});
+
+
+test('long automatic approval remains yellow while explicit questions, quota and manual approval stay red', () => {
+  const app=questionHarness();
+  try {
+    app.send('turn_context',{approvals_reviewer:'auto_review'});
+    app.send('response_item',{type:'custom_tool_call',name:'exec_command',call_id:'long-command',input:'long running build'});
+    app.hook('PermissionRequest');
+    assert.equal(aggregateTraffic(app.tasks(),Date.now()+600000).state,'working','real JSONL reviewer context must suppress automatic-approval red');
+    const directoryTask={id:'question-thread',sessionId:'question-thread',source:'hook',state:'waiting',waitReason:'approval',updatedAt:1,approvalsReviewer:'auto_review'};
+    assert.equal(aggregateTraffic([directoryTask],600001).state,'working','a ten-minute command must never become a user approval request');
+    assert.equal(aggregateTraffic([{...directoryTask,approvalsReviewer:'user'}],600001).state,'waiting');
+    assert.equal(aggregateTraffic([{...directoryTask,waitReason:'input'}],600001).state,'waiting');
+    assert.equal(aggregateTraffic([{...directoryTask,waitReason:'quota'}],600001).state,'waiting');
+    app.send('response_item',{type:'function_call',name:'request_user_input_async',call_id:'confirm',arguments:'{}'});
+    assert.equal(app.state(),'waiting');
+    app.send('event_msg',{type:'user_message',message:app.reply('confirm',0)});
+    assert.equal(app.state(),'working');
+  } finally {app.close();}
+});
+
+test('late turn context annotates a pending Hook without replaying old session activity', () => {
+  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'nexo-reviewer-'));
+  const records=[{id:'one',sessionId:'one',source:'hook',state:'waiting',waitReason:'approval',updatedAt:200},
+    {id:'one:child',sessionId:'one',source:'hook',state:'waiting',waitReason:'approval',updatedAt:201}];
+  fs.writeFileSync(path.join(directory,'state.json'),JSON.stringify({tasks:records}));
+  const service=new CodexTrafficService(directory);
+  try {
+    service.trackSessions([{id:'one',agent:'codex',status:'running_tool',approvalsReviewer:'auto_review',updatedAt:100,startedAt:100,durationSeconds:0}]);
+    assert.equal(service.getSnapshot().state,'working');
+    const saved=JSON.parse(fs.readFileSync(path.join(directory,'state.json'),'utf8')).tasks;
+    assert.ok(saved.every(task=>task.approvalsReviewer==='auto_review'));
+    assert.equal(saved[0].updatedAt,200,'old context must not rewrite the Hook event timestamp');
+    service.trackSessions([{id:'one',agent:'codex',status:'running_tool',approvalsReviewer:'user',updatedAt:250,startedAt:100,durationSeconds:0}]);
+    assert.equal(service.getSnapshot().state,'waiting','switching to manual approvals keeps the actual child request visible');
+  } finally {service.stop();fs.rmSync(directory,{recursive:true,force:true});}
+});
+
+
+test('only unknown approval requests use the ten-second fallback', () => {
+  const task={id:'request',sessionId:'request',source:'hook',state:'waiting',waitReason:'approval',updatedAt:1000};
+  assert.equal(APPROVAL_GRACE_MS,10000);
+  assert.equal(aggregateTraffic([task],10999).state,'working');
+  assert.equal(aggregateTraffic([task],11000).state,'waiting');
+  assert.equal(aggregateTraffic([{...task,approvalsReviewer:'user'}],1000).state,'waiting','confirmed human review is immediate');
+  assert.equal(aggregateTraffic([{...task,approvalsReviewer:'auto_review'}],601000).state,'working');
+  const tasks=new Map([[task.id,task]]);
+  applyTrafficEvent(tasks,hookTrafficEvent('PreToolUse',{session_id:'request',tool_name:'exec_command'},5000));
+  assert.equal(aggregateTraffic(tasks.values(),601000).state,'working','the fallback stops once execution begins');
 });

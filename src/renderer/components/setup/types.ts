@@ -12,8 +12,6 @@ export type {
   LogImportState,
   InstallAppStatus,
   InstallAppState,
-  VerifyQuotaStatus,
-  VerifyQuotaState,
 } from '../../../common/types';
 
 /** 向后兼容现有 SetupWizard 内部引用的别名 */
@@ -62,14 +60,6 @@ export const INITIAL_SETUP_STEPS: SetupStep[] = [
     title: '安装手环应用',
     shortLabel: '安装应用',
     description: '一键将配套的 Nexo 手环端快应用推送到手环。',
-    status: 'pending',
-  },
-  {
-    id: 'verify_quota',
-    index: 4,
-    title: '验证额度',
-    shortLabel: '确认显示',
-    description: '检查电脑端额度数据获取，并在手环端确认卡片展示正常。',
     status: 'pending',
   },
 ];

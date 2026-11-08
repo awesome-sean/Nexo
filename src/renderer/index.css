@@ -1913,7 +1913,7 @@ html.screen-minibar #root {
 .nexo-setup-overlay.setup-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 32px 48px; background: rgb(14 14 18 / 48%); border-radius: 0; -webkit-app-region: no-drag; --card-padding: 24px; --radius-card: 24px; --radius-control: 18px; }
 .nexo-setup-dialog.setup-dialog { width: min(1080px, 100%); max-height: min(880px, calc(100vh - 64px)); display: flex; flex-direction: column; overflow: hidden; background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: 28px; box-shadow: 0 30px 90px rgb(0 0 0 / 24%); outline: none; }
 .setup-dialog .setup-progress-header { position: relative; z-index: 1; flex-shrink: 0; padding: 26px 28px 22px !important; display: flex; align-items: flex-start; gap: 24px; border-bottom: 1px solid var(--border-default); }
-.setup-progress { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; flex: 1; min-width: 0; }
+.setup-progress { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; flex: 1; min-width: 0; }
 .setup-progress button { text-align: left; cursor: pointer; min-width: 0; }
 .setup-progress-track { height: 6px; display: block; border-radius: 999px; margin-bottom: 14px; background: var(--bg-subtle); }
 .setup-progress button[aria-current="step"] .setup-progress-track { background: var(--data-secondary); }
@@ -2040,7 +2040,7 @@ html.screen-minibar #root {
 .support-methods button { flex: 1; padding: 9px 12px; border-radius: 999px; cursor: pointer; font-size: 14px; }
 .support-methods button[aria-pressed="true"] { background: var(--bg-surface); box-shadow: 0 2px 6px rgb(0 0 0 / 5%); }
 .support-qr { display: grid; justify-items: center; gap: 12px; margin-top: 12px; color: var(--text-muted); font-size: 13px; }
-.support-qr img { display: block; width: 220px; height: 220px; object-fit: contain; background: white; border-radius: 16px; }
+.support-qr img { display: block; width: 160px; height: 160px; object-fit: contain; background: white; border-radius: 16px; }
 .floating-startup-choices { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .floating-startup-choices button:last-child { grid-column: 1 / -1; }
 .minibar-edge-container .nexo-traffic-edge-button { position: absolute; inset: 0; width: 100%; height: 100%; min-width: 0; min-height: 0; line-height: 0; overflow: hidden; }
