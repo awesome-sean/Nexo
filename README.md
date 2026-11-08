@@ -4,7 +4,7 @@
     <img src="assets/desktop-mark.svg" width="88" height="88" alt="Nexo Logo" />
   </picture>
   <h1>Nexo</h1>
-  <p>通过 Windows 桌面悬浮窗或小米手环横屏桌搭，查看 ChatGPT/Codex 额度与任务状态。</p>
+  <p>通过 Windows 桌面悬浮窗或小米手环桌搭，查看 ChatGPT/Codex 额度与任务状态。</p>
 </div>
 [使用说明](#使用说明) · [源码构建](docs/BUILDING.md) · [反馈问题](https://github.com/sthess548/Nexo/issues)
 
