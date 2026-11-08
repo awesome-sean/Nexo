@@ -23,6 +23,8 @@
 
 当前电脑端为 **1.0.1**，配套手环快应用为 **1.0.0**。
 
+[1.0.1 发布页](https://github.com/sthess548/Nexo/releases/tag/v1.0.1) · [1.0.0 发布页](https://github.com/sthess548/Nexo/releases/tag/v1.0.0)
+
 ## 主要功能
 
 ### 电脑端应用程序
