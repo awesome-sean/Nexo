@@ -7,7 +7,11 @@
   <p>通过 Windows 桌面悬浮窗或小米手环桌搭，查看 ChatGPT/Codex 额度与任务状态。</p>
 </div>
 
-[使用说明](#使用说明) · [源码构建](docs/BUILDING.md) · [反馈问题](https://github.com/sthess548/Nexo/issues)
+<p align="center">
+  <a href="#使用说明">使用说明</a> ·
+  <a href="docs/BUILDING.md">源码构建</a> ·
+  <a href="https://github.com/sthess548/Nexo/issues">反馈问题</a>
+</p>
 
 - **Windows 桌面悬浮窗**。下载并安装电脑端 EXE 即可使用。<br>
   EXE 下载地址　[https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Setup-1.0.0.exe](https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Setup-1.0.0.exe)
