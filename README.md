@@ -7,14 +7,17 @@
   <p>把 ChatGPT/Codex 的额度和任务状态，放到 Windows 桌面与小米手环上。</p>
 </div>
 
-[下载安装包](https://github.com/sthess548/Nexo/releases/latest) · [使用说明](#使用说明) · [源码构建](docs/BUILDING.md) · [反馈问题](https://github.com/sthess548/Nexo/issues)
+[下载 Windows 安装包](https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Setup-1.0.0.exe) · [下载手环快应用](https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Band-1.0.0.rpk) · [使用说明](#使用说明) · [源码构建](docs/BUILDING.md) · [反馈问题](https://github.com/sthess548/Nexo/issues)
+
+- **Windows 安装包 EXE**　[https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Setup-1.0.0.exe](https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Setup-1.0.0.exe)
+- **手环快应用 RPK**　[https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Band-1.0.0.rpk](https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Band-1.0.0.rpk)
 
 ## 主要功能
 
 - **额度监控**。5 小时额度、每周额度与重置时间一眼可见。
 - **任务状态联动**。提问、审核和额度暂停显示红灯，执行中黄灯，已完成绿灯。
 - **桌面悬浮窗**。深浅外观、文字开关、透明度、大小与四向停靠均可调整。悬停查看额度，双击 icon 唤起 Codex。
-- **手环桌搭**。横屏显示时间、额度和花费，支持表情切换、震动提醒。
+- **手环桌搭**。快应用前台运行时屏幕常亮，横屏显示时间、额度和花费，支持表情切换、震动提醒。
 - **人民币花费估算**。按当天 Token 用量计算，支持调整汇率。
 - **快应用与升级管理**。查看、安装和卸载手环快应用，在 Nexo 内检查并覆盖升级。
 
@@ -43,13 +46,15 @@
 
 ### 1. 安装与连接手环
 
-1. 下载并运行 `Nexo-Setup-1.0.0.exe`，在电脑上登录 Codex。
+1. 下载并运行 [Nexo-Setup-1.0.0.exe](https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Setup-1.0.0.exe)，在电脑上登录 Codex。
 2. 手环先通过小米运动健康完成账号绑定，电脑开启蓝牙。
 3. 在 Nexo「手环桌搭」点击「连接手环」，按向导导入设备资料。
    - **AstroBox 导入**。电脑版 AstroBox 登录同一小米账号并同步手环，回到 Nexo 点击读取，授权后选择设备导入。
    - **手机日志导入**。选择小米运动健康导出的日志，按向导提取并确认设备。
 4. 导入后在 AstroBox 中断开手环，再由 Nexo 连接。手环出现确认请求时点击同意。
 5. 安装配套 Nexo 快应用，并在手环上打开。配置向导和「安装快应用」区域均可完成安装。
+
+**屏幕常亮**。Nexo 快应用在前台运行时自动启用常亮，时间页和表情页均适用，适合桌搭展示。切出或退出快应用后恢复系统息屏。
 
 ### 2. 开启 Codex 任务联动
 
