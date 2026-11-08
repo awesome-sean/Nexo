@@ -21,9 +21,10 @@
 
 ## 版本更新
 
-当前电脑端为 **1.0.1**，手环快应用为 **1.0.1**。
-
-[1.0.1 发布页](https://github.com/sthess548/Nexo/releases/tag/v1.0.1) · [1.0.0 发布页](https://github.com/sthess548/Nexo/releases/tag/v1.0.0)
+| 应用 | 当前版本 | 发布页 |
+| --- | --- | --- |
+| 电脑应用程序 · Windows | **1.0.1** | [电脑应用程序发布页](docs/releases/desktop.md) |
+| 手环快应用 · 小米手环 | **1.0.1** · 构建 2 | [手环快应用发布页](docs/releases/band.md) |
 
 ## 主要功能
 
