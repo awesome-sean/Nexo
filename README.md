@@ -4,13 +4,15 @@
     <img src="assets/desktop-mark.svg" width="88" height="88" alt="Nexo Logo" />
   </picture>
   <h1>Nexo</h1>
-  <p>在 Windows 桌面或小米手环上，随时查看 ChatGPT/Codex 额度与任务状态。</p>
+  <p>通过 Windows 桌面悬浮窗或小米手环横屏桌搭，查看 ChatGPT/Codex 额度与任务状态。</p>
 </div>
 
 [下载 Windows 安装包](https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Setup-1.0.0.exe) · [下载手环快应用](https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Band-1.0.0.rpk) · [使用说明](#使用说明) · [源码构建](docs/BUILDING.md) · [反馈问题](https://github.com/sthess548/Nexo/issues)
 
-- **Windows 安装包 EXE**　[https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Setup-1.0.0.exe](https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Setup-1.0.0.exe)
-- **手环快应用 RPK**　[https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Band-1.0.0.rpk](https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Band-1.0.0.rpk)
+- **Windows 桌面悬浮窗**。下载并安装电脑端 EXE 即可使用。<br>
+  EXE 下载地址　[https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Setup-1.0.0.exe](https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Setup-1.0.0.exe)
+- **小米手环横屏桌搭**。需要电脑端 EXE 和手环 RPK，连接后联动使用。<br>
+  RPK 下载地址　[https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Band-1.0.0.rpk](https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Band-1.0.0.rpk)
 
 ## 主要功能
 
