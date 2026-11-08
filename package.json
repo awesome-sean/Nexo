@@ -38,8 +38,7 @@
       "assets/**/*"
     ],
     "asarUnpack": [
-      "assets/focus-codex.ps1",
-      "assets/apply-update.ps1"
+      "assets/focus-codex.ps1"
     ],
     "win": {
       "target": [

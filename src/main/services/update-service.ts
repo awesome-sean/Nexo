@@ -27,6 +27,7 @@ export interface UpdateInfo {
 export interface DownloadProgress {
   received: number;
   total: number;
+  stage?: 'downloading' | 'verifying';
 }
 
 type FetchLike = (url: string, init?: RequestInit) => Promise<Response>;
@@ -164,6 +165,7 @@ export async function downloadInstaller(
     });
     if (writeError) throw writeError;
 
+    onProgress({ received, total, stage: 'verifying' });
     if (hash.digest('hex') !== expected) throw new Error('安装包校验失败（SHA256 不一致），已删除，请重试');
     fs.renameSync(partPath, finalPath);
     return finalPath;

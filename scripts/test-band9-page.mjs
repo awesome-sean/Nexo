@@ -507,3 +507,26 @@ test('confirmed Codex quota pauses use the red waiting expression and resume to 
   assert.match(p.statusDot,/status-working\.png$/);
   p.onHide();
 });
+
+
+test('mixed work alternates the band dot without repeating vibration or expression transitions',()=>{
+ const {context,page:p,vibrations}=page();
+ let now=2000000;
+ const time=value=>{now=value;vm.runInContext('Date.now = () => '+now,context);};
+ time(now);p.onShow();
+ p.receiveTraffic({state:'working',counts:{working:1,done:1,waiting:0,idle:0},sampledAt:now,expiresAt:now+10000});
+ assert.match(p.statusDot,/status-working.png$/);
+ for(let i=1;i<=6;i++){
+  time(2000000+i*1000);p.updateTraffic();
+  assert.match(p.statusDot,i%2?/status-done.png$/:/status-working.png$/);
+  assert.equal(p.getTrafficState(),'working');
+  assert.equal(p.expressionName,'naughty');
+  assert.equal(p.showExpression,false);
+ }
+ assert.equal(vibrations.length,0,'visual alternation must not repeatedly vibrate');
+ time(2010000);p.updateTraffic();assert.match(p.statusDot,/status-working.png$/);
+ p.receiveTraffic({state:'waiting',counts:{working:1,done:1,waiting:1,idle:0},sampledAt:now,expiresAt:null});
+ assert.match(p.statusDot,/status-waiting.png$/);
+ time(now+1000);p.updateTraffic();assert.match(p.statusDot,/status-waiting.png$/);
+ p.onHide();
+});

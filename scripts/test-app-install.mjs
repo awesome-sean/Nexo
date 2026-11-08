@@ -434,7 +434,7 @@ test('14. 一键安装内置包: prepare -> chunks -> commit 且上报 core 真�
 
   // 用户不需要选择文件：走了真实的内置包路径
   assert.equal(res.packageId, 'com.codeisland.band');
-  assert.equal(res.versionCode, 34);
+  assert.equal(res.versionCode, service.getBundledInfo().versionCode);
   assert.ok(res.totalChunks > 0);
   assert.equal(res.sentChunks, res.totalChunks);
 

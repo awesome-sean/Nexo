@@ -59,7 +59,7 @@ function aggregateTraffic(tasks, now = Date.now()) {
     counts[awaitingApproval ? "working" : task.state]++;
   }
   const state = counts.waiting ? "waiting" : counts.working ? "working" : counts.done ? "done" : "idle";
-  return { state, counts, sampledAt: now, expiresAt: state === "done" ? expiresAt : null };
+  return { state, counts, sampledAt: now, expiresAt: state === "done" || state === "working" && counts.done > 0 ? expiresAt : null };
 }
 function applyTrafficEvent(tasks, event) {
   if (event.clear) {

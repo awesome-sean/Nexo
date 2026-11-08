@@ -1,6 +1,6 @@
 {
   "name": "codeisland-band",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CodeIsland on Xiaomi Smart Band 10 (HyperOS Vela)",
   "scripts": {
     "start": "aiot start",

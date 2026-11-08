@@ -74,7 +74,8 @@ contextBridge.exposeInMainWorld('pulse', {
   openRelease: (url: string) => invoke('pulse:open-release', url),
   downloadUpdate: () => invoke('pulse:download-update'),
   installUpdate: () => invoke('pulse:install-update'),
-  onUpdateProgress: (callback: (p: { received?: number; total?: number; status?: 'downloading' | 'downloaded' | 'error'; version?: string; error?: string }) => void) => {
+  openUpdateDownload: () => invoke('pulse:open-update-download'),
+  onUpdateProgress: (callback: (p: { received?: number; total?: number; status?: 'downloading' | 'verifying' | 'downloaded' | 'installer-closed' | 'error'; version?: string; error?: string }) => void) => {
     const subscription = (_: unknown, p: Parameters<typeof callback>[0]) => callback(p);
     ipcRenderer.on('pulse:update-progress', subscription);
     return () => ipcRenderer.removeListener('pulse:update-progress', subscription);

@@ -85,7 +85,7 @@ export function BandDeskPage({ quota, display, connection, setupOpen, onStartSet
         <div ref={stageRef} className="workspace-band-stage">
           {connected ? <div className="workspace-band-screen" style={{ width: logicalWidth * previewScale, height: 192 * previewScale }}>
             <div style={{ transform: 'scale(' + previewScale + ')', transformOrigin: 'top left' }}>
-              <Band9Preview screenWidth={model?.width} screenHeight={model?.height} traffic={quota?.traffic?.state}
+              <Band9Preview screenWidth={model?.width} screenHeight={model?.height} traffic={quota?.traffic?.state} trafficSnapshot={quota?.traffic}
                 time={display.time} date={display.date} five={display.five} week={display.week}
                 fiveReset={display.resetClock} weekReset={display.resetDate} cny={display.cny} partial={display.partial} />
             </div>

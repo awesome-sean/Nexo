@@ -27,7 +27,7 @@ test('Nexo upgrades use the verified in-app installer flow and include license n
   const main = fs.readFileSync(new URL('../src/main/index.ts', import.meta.url), 'utf8');
   assert.doesNotMatch(main, /fetchUpdateInfo|downloadInstaller|github\.com\/kyrieove/);
   assert.match(main, /new DesktopUpdateService/);
-  assert.match(main, /launchUpdate\(desktopUpdate\.verifiedInstaller\(\)\)/);
+  assert.match(main, /launchUpdate\(desktopUpdate\.verifiedInstaller\(\),/);
   const license = fs.readFileSync(new URL('../LICENSE', import.meta.url), 'utf8');
   const notices = fs.readFileSync(new URL('../assets/THIRD-PARTY-LICENSES.txt', import.meta.url), 'utf8');
   assert.ok(notices.startsWith(license));

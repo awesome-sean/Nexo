@@ -169,8 +169,9 @@ export interface PulseBridge {
   }>;
   openRelease: (url: string) => Promise<{ ok: boolean; error?: string }>;
   downloadUpdate: () => Promise<{ ok: boolean; version?: string; error?: string }>;
-  installUpdate: () => Promise<{ ok: boolean; error?: string }>;
-  onUpdateProgress: (callback: (p: { received?: number; total?: number; status?: 'downloading' | 'downloaded' | 'error'; version?: string; error?: string }) => void) => () => void;
+  installUpdate: () => Promise<{ ok: boolean; error?: string; retryDownload?: boolean }>;
+  openUpdateDownload: () => Promise<{ ok: boolean; error?: string }>;
+  onUpdateProgress: (callback: (p: { received?: number; total?: number; status?: 'downloading' | 'verifying' | 'downloaded' | 'installer-closed' | 'error'; version?: string; error?: string }) => void) => () => void;
   extractBandKey: (filePath: string) => Promise<BandKeyResult>;
   getHookStatus: () => Promise<HookStatus>;
   installHook: () => Promise<HookResult>;

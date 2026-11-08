@@ -96,7 +96,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
           </div>
           <div className="nexo-device-stage">
             <div className="nexo-device-screen">
-              <Band9Preview screenWidth={model?.width} screenHeight={model?.height} traffic={quota?.traffic?.state} time={time} date={date} five={five} week={week} fiveReset={resetClock} weekReset={resetDate} cny={cny} partial={dailyFresh && daily?.incomplete === true} />
+              <Band9Preview screenWidth={model?.width} screenHeight={model?.height} traffic={quota?.traffic?.state} trafficSnapshot={quota?.traffic} time={time} date={date} five={five} week={week} fiveReset={resetClock} weekReset={resetDate} cny={cny} partial={dailyFresh && daily?.incomplete === true} />
             </div>
           </div>
           <div className="nexo-preview-caption"><span>{bandDeviceName || '小米手环'} · 横屏</span><span>15 秒同步周期</span></div>

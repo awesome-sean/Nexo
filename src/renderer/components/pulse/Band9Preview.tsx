@@ -1,4 +1,5 @@
-import type { TrafficState } from '../../../common/codex-traffic';
+import type { TrafficState, TrafficSnapshot } from '../../../common/codex-traffic';
+import { useTrafficLightState } from '../../hooks/useTrafficLightState';
 import React from 'react';
 
 interface Props {
@@ -11,13 +12,15 @@ interface Props {
   cny: number | null;
   partial: boolean;
   traffic?: TrafficState;
+  trafficSnapshot?: TrafficSnapshot;
   screenWidth?: number;
   screenHeight?: number;
 }
 
 const names: Record<string, string> = { ':': 'colon', '/': 'slash', '-': 'dash', '.': 'dot', ' ': 'blank' };
 
-export const Band9Preview: React.FC<Props> = ({ time, date, five, week, fiveReset, weekReset, cny, partial, traffic = 'idle', screenWidth = 192, screenHeight = 490 }) => {
+export const Band9Preview: React.FC<Props> = ({ time, date, five, week, fiveReset, weekReset, cny, partial, traffic = 'idle', trafficSnapshot, screenWidth = 192, screenHeight = 490 }) => {
+  const animatedTraffic = useTrafficLightState(trafficSnapshot);
   const logicalHeight = screenHeight * 192 / screenWidth;
   const scale = Math.min(1, logicalHeight / 490);
   const landscapeOffset = screenWidth === 212 && screenHeight === 520 ? 6 * 192 / screenWidth : 0;
@@ -44,7 +47,7 @@ export const Band9Preview: React.FC<Props> = ({ time, date, five, week, fiveRese
       style={{ width: logicalHeight, height: 192, position: 'relative', borderRadius: 96, overflow: 'hidden', background: '#000', flexShrink: 0 }}>
       <div style={{ width: 490, height: 192, transform: `scale(${scale})`, transformOrigin: 'top left', position: 'absolute', left: -landscapeOffset, top: (192 - 192 * scale) / 2 }}>
       <div style={{ width: 192, height: 490, position: 'absolute', left: 149, top: -149, transform: 'rotate(-90deg)', background: '#000' }}>
-        {image(`status-${traffic}`, 14, 88, 16, 16)}
+        {image(`status-${trafficSnapshot ? animatedTraffic : traffic}`, 14, 88, 16, 16)}
         {image(`clock-${time[0]}`, 38, 10, 41, 90)}
         {image(`clock-${time[1]}`, 79, 10, 41, 90)}
         {image('clock-colon', 120, 10, 16, 90)}

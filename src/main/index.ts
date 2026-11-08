@@ -217,7 +217,7 @@ ipcMain.handle('pulse:check-update', async () => {
 });
 ipcMain.handle('pulse:download-update', async () => {
   try {
-    const version = await desktopUpdate.download(progress => win?.webContents.send('pulse:update-progress', { ...progress, status: 'downloading' }));
+    const version = await desktopUpdate.download(progress => win?.webContents.send('pulse:update-progress', { ...progress, status: progress.stage || 'downloading' }));
     win?.webContents.send('pulse:update-progress', { status: 'downloaded', version });
     return { ok: true, version };
   } catch (error) {
@@ -233,11 +233,23 @@ ipcMain.handle('pulse:install-update', async () => {
     if (!app.isPackaged || process.platform !== 'win32') throw new Error('请在已安装的 Windows 版 Nexo 中使用覆盖更新');
     if (appInstallService.hasActiveInstallation()) throw new Error('请等待手环应用安装完成后再更新 Nexo');
     startingUpdate = true;
-    await launchUpdate(desktopUpdate.verifiedInstaller());
-    setImmediate(() => quitPulse());
+    await launchUpdate(desktopUpdate.verifiedInstaller(), () => {
+      startingUpdate = false;
+      if (win && !win.isDestroyed()) win.webContents.send('pulse:update-progress', { status: 'installer-closed' });
+    });
     return { ok: true };
   } catch (error) {
     startingUpdate = false;
+    return { ok: false, error: String(error instanceof Error ? error.message : error), retryDownload: !desktopUpdate.downloadedVersion };
+  }
+});
+ipcMain.handle('pulse:open-update-download', async () => {
+  try {
+    const info = await desktopUpdate.check();
+    if (!info.installer) throw new Error('发布页暂时没有可下载的安装包');
+    await shell.openExternal(info.installer.url);
+    return { ok: true };
+  } catch (error) {
     return { ok: false, error: String(error instanceof Error ? error.message : error) };
   }
 });

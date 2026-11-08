@@ -2057,3 +2057,5 @@ html.screen-minibar #root {
   .settings-navigation button { gap: 8px; padding-inline: 10px; font-size: 14px; }
   .workspace-expression-states { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+.nexo-update-links { display: flex; align-items: center; gap: 18px; }

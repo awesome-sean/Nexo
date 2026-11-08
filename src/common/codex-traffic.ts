@@ -3,6 +3,7 @@ export type TrafficSource = 'hook' | 'cli' | 'session';
 export type TrafficWaitReason = 'approval' | 'input' | 'quota';
 export const DONE_DURATION_MS = 10 * 60_000;
 export const APPROVAL_GRACE_MS = 10_000;
+export const MIXED_TRAFFIC_PHASE_MS = 1000;
 export const TRAFFIC_COLORS: Record<TrafficState, string> = {
   idle: 'transparent', working: '#F2CF4A', waiting: '#F04452', done: '#24CE87',
 };
@@ -27,6 +28,15 @@ export interface TrafficSnapshot {
   sampledAt: number;
   counts: Record<TrafficState, number>;
   expiresAt: number | null;
+}
+export function hasMixedTraffic(traffic?: TrafficSnapshot, now = Date.now()): boolean {
+  return traffic?.state === 'working' && traffic.counts?.working > 0 && traffic.counts?.done > 0
+    && (typeof traffic.expiresAt !== 'number' || now < traffic.expiresAt);
+}
+/** Visual alternation must not create task transitions, expression switches or repeated alerts. */
+export function getTrafficLightState(traffic?: TrafficSnapshot, now = Date.now()): TrafficState {
+  if (hasMixedTraffic(traffic, now)) return Math.floor(now / MIXED_TRAFFIC_PHASE_MS) % 2 === 0 ? 'working' : 'done';
+  return traffic?.state ?? 'idle';
 }
 export interface TrafficEvent {
   id: string;
@@ -62,7 +72,7 @@ export function aggregateTraffic(tasks: Iterable<TrafficTask>, now = Date.now())
     counts[awaitingApproval ? 'working' : task.state]++;
   }
   const state = counts.waiting ? 'waiting' : counts.working ? 'working' : counts.done ? 'done' : 'idle';
-  return {state, counts, sampledAt:now, expiresAt:state === 'done' ? expiresAt : null};
+  return {state, counts, sampledAt:now, expiresAt:state === 'done' || (state === 'working' && counts.done > 0) ? expiresAt : null};
 }
 export function applyTrafficEvent(tasks: Map<string, TrafficTask>, event: TrafficEvent): void {
   if (event.clear) { for (const [id,task] of tasks) if(task.updatedAt<=event.at) tasks.delete(id); return; }

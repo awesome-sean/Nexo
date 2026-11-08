@@ -67,6 +67,7 @@ test('downloadInstaller: 哈希一致时落盘并报告进度；不一致时删�
     assert.deepEqual(fs.readFileSync(file), exe);
     assert.equal(progress.at(-1).received, exe.length);
     assert.equal(progress.at(-1).total, exe.length);
+    assert.equal(progress.at(-1).stage, 'verifying');
 
     await assert.rejects(
       downloadInstaller({ name: 'Nexo-Setup-9.9.9.exe', url: `${base}/a.exe`, size: exe.length, checksumUrl: `${base}/bad.sha256` }, dir, () => {}),

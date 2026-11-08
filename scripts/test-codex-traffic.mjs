@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import {spawn} from 'node:child_process';
-import {aggregateTraffic,applyTrafficEvent,hookTrafficEvent,DONE_DURATION_MS,APPROVAL_GRACE_MS} from '../src/common/codex-traffic.ts';
+import {aggregateTraffic,applyTrafficEvent,hookTrafficEvent,DONE_DURATION_MS,APPROVAL_GRACE_MS,getTrafficLightState,hasMixedTraffic} from '../src/common/codex-traffic.ts';
 import {enqueueTraffic,readTrafficSnapshot,CodexTrafficService} from '../src/main/services/codex-traffic-store.ts';
 import {CodexHookInstaller,CODEX_HOOK_EVENTS} from '../src/main/services/codex-hook-install.ts';
 
@@ -163,3 +163,22 @@ test('fast-forwarded JSONL files recover their own metadata ID when new events a
    assert.equal(manager.getSession('codex-active'),undefined);
  }finally{tailer.stop();manager.dispose();}
 }));
+
+
+test('parallel work and recent completion alternate visually, with red priority and completion expiry',()=>{
+ const tasks=[task('building','working',1000),task('finished','done',1000)];
+ const mixed=aggregateTraffic(tasks,2000);
+ assert.equal(mixed.state,'working');
+ assert.equal(mixed.expiresAt,1000+DONE_DURATION_MS);
+ assert.equal(hasMixedTraffic(mixed,2000),true);
+ assert.equal(getTrafficLightState(mixed,2000),'working');
+ assert.equal(getTrafficLightState(mixed,3000),'done');
+ assert.equal(getTrafficLightState(mixed,4000),'working');
+ assert.equal(getTrafficLightState(mixed,1000+DONE_DURATION_MS),'working');
+ const red=aggregateTraffic([...tasks,task('question','waiting',1000)],2000);
+ assert.equal(getTrafficLightState(red,2000),'waiting');
+ assert.equal(getTrafficLightState(red,3000),'waiting');
+ assert.equal(getTrafficLightState(aggregateTraffic([tasks[1]],2000),3000),'done');
+ assert.equal(getTrafficLightState(aggregateTraffic([tasks[0]],2000),3000),'working');
+ assert.equal(getTrafficLightState(aggregateTraffic(tasks,1000+DONE_DURATION_MS),1000+DONE_DURATION_MS),'working');
+});
