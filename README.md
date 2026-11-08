@@ -92,6 +92,6 @@ npm start
 
 ## 许可与致谢
 
-代码沿用 [MIT License](LICENSE)，保留已有版权声明。项目参考了 Pulse、CodeIsland、AstroBox CLI 及 Codex 状态灯相关实现，详情见 [素材与第三方说明](NOTICE.md) 和 [第三方许可](assets/THIRD-PARTY-LICENSES.txt)。字体许可随资源附带。
+代码沿用 [MIT License](LICENSE)，保留已有版权声明。参考项目、素材来源与授权范围详见 [素材与第三方说明](NOTICE.md) 和 [第三方许可](assets/THIRD-PARTY-LICENSES.txt)。字体许可随资源附带。
 
 品牌标识、设备图片和来源于桌搭快应用的表情资源另见素材说明。Nexo 为社区项目。

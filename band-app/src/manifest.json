@@ -1,0 +1,45 @@
+{
+  "package": "com.codeisland.band",
+  "name": "Nexo",
+  "versionName": "1.2.14",
+  "versionCode": 42,
+  "minPlatformVersion": 1000,
+  "icon": "/common/icon-nexo-100.png",
+  "features": [
+    {
+      "name": "system.interconnect"
+    },
+    {
+      "name": "system.router"
+    },
+    {
+      "name": "system.brightness"
+    },
+    {
+      "name": "system.device"
+    },
+    {
+      "name": "system.vibrator"
+    }
+  ],
+  "deviceTypeList": [
+    "watch"
+  ],
+  "config": {
+    "logLevel": "debug",
+    "designWidth": 192
+  },
+  "router": {
+    "entry": "pages/index",
+    "pages": {
+      "pages/index": {
+        "component": "index"
+      }
+    }
+  },
+  "display": {
+    "backgroundColor": "#000000",
+    "titleBar": false,
+    "fullScreen": true
+  }
+}

@@ -1,0 +1,803 @@
+<template>
+  <div class="screen" style="{{screenStyle}}" onclick="handleTap" onlongpress="exitApp">
+    <div class="dashboard" if="{{!showExpression}}" style="{{screenStyle}}">
+      <image class="statusDot" src="{{statusDot}}" style="{{statusDotStyle}}"></image>
+      <image class="hour1" src="{{hour1}}" style="{{hour1Style}}"></image>
+      <image class="hour2" src="{{hour2}}" style="{{hour2Style}}"></image>
+      <image class="colon" src="/common/landscape124/clock-colon.png" style="{{colonStyle}}"></image>
+      <image class="minute1" src="{{minute1}}" style="{{minute1Style}}"></image>
+      <image class="minute2" src="{{minute2}}" style="{{minute2Style}}"></image>
+      <image class="date0" src="{{date0}}" style="{{date0Style}}"></image>
+      <image class="date1" src="{{date1}}" style="{{date1Style}}"></image>
+      <image class="date2" src="{{date2}}" style="{{date2Style}}"></image>
+      <image class="date3" src="{{date3}}" style="{{date3Style}}"></image>
+      <image class="date4" src="{{date4}}" style="{{date4Style}}"></image>
+      <image class="moneyLabel" src="{{moneyLabel}}" style="{{moneyLabelStyle}}"></image>
+      <image class="moneySymbol" src="{{moneySymbol}}" style="{{moneySymbolStyle}}"></image>
+      <image class="money0" src="{{money0}}" style="{{moneyStyle0}}"></image>
+      <image class="money1" src="{{money1}}" style="{{moneyStyle1}}"></image>
+      <image class="money2" src="{{money2}}" style="{{moneyStyle2}}"></image>
+      <image class="money3" src="{{money3}}" style="{{moneyStyle3}}"></image>
+      <image class="money4" src="{{money4}}" style="{{moneyStyle4}}"></image>
+      <image class="money5" src="{{money5}}" style="{{moneyStyle5}}"></image>
+      <image class="money6" src="{{money6}}" style="{{moneyStyle6}}"></image>
+      <image class="fiveImage" src="{{fiveImage}}" style="{{fiveImageStyle}}"></image>
+      <image class="weekImage" src="{{weekImage}}" style="{{weekImageStyle}}"></image>
+      <image class="fiveResetLabel" src="/common/landscape124/reset-label.png" style="{{fiveResetLabelStyle}}"></image>
+      <image class="weekResetLabel" src="/common/landscape124/reset-label.png" style="{{weekResetLabelStyle}}"></image>
+      <image class="fiveReset0" src="{{fiveReset0}}" style="{{fiveReset0Style}}"></image>
+      <image class="weekReset0" src="{{weekReset0}}" style="{{weekReset0Style}}"></image>
+      <image class="fiveReset1" src="{{fiveReset1}}" style="{{fiveReset1Style}}"></image>
+      <image class="weekReset1" src="{{weekReset1}}" style="{{weekReset1Style}}"></image>
+      <image class="fiveReset2" src="{{fiveReset2}}" style="{{fiveReset2Style}}"></image>
+      <image class="weekReset2" src="{{weekReset2}}" style="{{weekReset2Style}}"></image>
+      <image class="fiveReset3" src="{{fiveReset3}}" style="{{fiveReset3Style}}"></image>
+      <image class="weekReset3" src="{{weekReset3}}" style="{{weekReset3Style}}"></image>
+      <image class="fiveReset4" src="{{fiveReset4}}" style="{{fiveReset4Style}}"></image>
+      <image class="weekReset4" src="{{weekReset4}}" style="{{weekReset4Style}}"></image>
+    </div>
+    <image class="expressionImage" if="{{showExpression}}" src="{{expressionImage}}" style="{{expressionImageStyle}}"></image>
+  </div>
+</template>
+
+<style>
+.dashboard { position: absolute; left: 0px; top: 0px; }
+.expressionImage { position: absolute; object-fit: contain; }
+.statusDot { position: absolute; }
+.screen { width: 192px; height: 490px; background-color: #000000; }
+.hour1 { position: absolute; }
+.hour2 { position: absolute; }
+.colon { position: absolute; }
+.minute1 { position: absolute; }
+.minute2 { position: absolute; }
+.date0 { position: absolute; }
+.date1 { position: absolute; }
+.date2 { position: absolute; }
+.date3 { position: absolute; }
+.date4 { position: absolute; }
+.moneyLabel { position: absolute; }
+.moneySymbol { position: absolute; }
+.money0 { position: absolute; }
+.money1 { position: absolute; }
+.money2 { position: absolute; }
+.money3 { position: absolute; }
+.money4 { position: absolute; }
+.money5 { position: absolute; }
+.money6 { position: absolute; }
+.fiveImage { position: absolute; }
+.weekImage { position: absolute; }
+.fiveResetLabel { position: absolute; }
+.weekResetLabel { position: absolute; }
+.fiveReset0 { position: absolute; }
+.weekReset0 { position: absolute; }
+.fiveReset1 { position: absolute; }
+.weekReset1 { position: absolute; }
+.fiveReset2 { position: absolute; }
+.weekReset2 { position: absolute; }
+.fiveReset3 { position: absolute; }
+.weekReset3 { position: absolute; }
+.fiveReset4 { position: absolute; }
+.weekReset4 { position: absolute; }
+</style>
+
+<script>
+import interconnect from '@system.interconnect';
+import router from '@system.router';
+import brightness from '@system.brightness';
+import device from '@system.device';
+import vibrator from '@system.vibrator';
+
+const ROOT = '/common/landscape124/';
+const EXPRESSION_ROOT = '/common/expressions/';
+const EXPRESSION_FRAME_MS = 100;
+const WAITING_VIBRATION_PATTERN = [
+  { at: 0, mode: 'short' },
+  { at: 300, mode: 'long' },
+  { at: 1200, mode: 'short' },
+  { at: 1500, mode: 'long' },
+  { at: 2400, mode: 'short' },
+  { at: 2700, mode: 'long' },
+  { at: 3600, mode: 'short' },
+  { at: 3900, mode: 'long' },
+  { at: 4800, mode: 'short' },
+  { at: 5100, mode: 'long' },
+  { at: 6000, mode: 'short' },
+  { at: 6300, mode: 'long' }
+];
+// Band 9/10 expose preset vibration modes. Each long pulse lasts as defined by the firmware.
+const COMPLETION_VIBRATION_PATTERN = [
+  { at: 0, mode: 'long' },
+  { at: 500, mode: 'long' },
+  { at: 1000, mode: 'long' },
+  { at: 1500, mode: 'long' }
+];
+const DOUBLE_TAP_MS = 350;
+const DOUBLE_BACK_MS = 2000;
+const COMPLETION_VIEW_MS = 10 * 60 * 1000;
+const EXPRESSIONS = {
+  working: { name: 'naughty', frames: 9 },
+  waiting: { name: 'smirk', frames: 17 },
+  done: { name: 'star', frames: 16 },
+  idle: { name: 'sleep', frames: 8 }
+};
+// Coordinates in the 192 x 490 design canvas, shared by every model.
+const BASE_LAYOUT = {
+  // Fit the full rectangular artwork inside the rounded screen, including corner details.
+  "expressionImage": { "left": 17.28, "top": 44.1, "width": 157.44, "height": 401.8 },
+  "statusDot": { "left": 85, "top": 14, "width": 16, "height": 16 },
+  "hour1": {
+    "left": 89,
+    "top": 38,
+    "width": 90,
+    "height": 41
+  },
+  "hour2": {
+    "left": 89,
+    "top": 79,
+    "width": 90,
+    "height": 41
+  },
+  "colon": {
+    "left": 89,
+    "top": 120,
+    "width": 90,
+    "height": 16
+  },
+  "minute1": {
+    "left": 89,
+    "top": 136,
+    "width": 90,
+    "height": 41
+  },
+  "minute2": {
+    "left": 89,
+    "top": 177,
+    "width": 90,
+    "height": 41
+  },
+  "date0": {
+    "left": 52,
+    "top": 43,
+    "width": 54,
+    "height": 26
+  },
+  "date1": {
+    "left": 52,
+    "top": 69,
+    "width": 54,
+    "height": 26
+  },
+  "date2": {
+    "left": 52,
+    "top": 95,
+    "width": 54,
+    "height": 14
+  },
+  "date3": {
+    "left": 52,
+    "top": 109,
+    "width": 54,
+    "height": 26
+  },
+  "date4": {
+    "left": 52,
+    "top": 135,
+    "width": 54,
+    "height": 26
+  },
+  "moneyLabel": {
+    "left": 25,
+    "top": 50,
+    "width": 30,
+    "height": 32
+  },
+  "moneySymbol": {
+    "left": 25,
+    "top": 83,
+    "width": 30,
+    "height": 24
+  },
+  "money0": {
+    "left": 25,
+    "top": 109,
+    "width": 30,
+    "height": 12
+  },
+  "money1": {
+    "left": 25,
+    "top": 121,
+    "width": 30,
+    "height": 12
+  },
+  "money2": {
+    "left": 25,
+    "top": 133,
+    "width": 30,
+    "height": 12
+  },
+  "money3": {
+    "left": 25,
+    "top": 145,
+    "width": 30,
+    "height": 12
+  },
+  "money4": {
+    "left": 25,
+    "top": 157,
+    "width": 30,
+    "height": 12
+  },
+  "money5": {
+    "left": 25,
+    "top": 169,
+    "width": 30,
+    "height": 12
+  },
+  "money6": {
+    "left": 25,
+    "top": 181,
+    "width": 30,
+    "height": 12
+  },
+  "fiveImage": {
+    "left": 55,
+    "top": 232,
+    "width": 116,
+    "height": 116
+  },
+  "weekImage": {
+    "left": 55,
+    "top": 358,
+    "width": 116,
+    "height": 116
+  },
+  "fiveResetLabel": {
+    "left": 20,
+    "top": 247,
+    "width": 28,
+    "height": 28
+  },
+  "weekResetLabel": {
+    "left": 20,
+    "top": 373,
+    "width": 28,
+    "height": 28
+  },
+  "fiveReset0": {
+    "left": 20,
+    "top": 278,
+    "width": 28,
+    "height": 11
+  },
+  "weekReset0": {
+    "left": 20,
+    "top": 404,
+    "width": 28,
+    "height": 11
+  },
+  "fiveReset1": {
+    "left": 20,
+    "top": 289,
+    "width": 28,
+    "height": 11
+  },
+  "weekReset1": {
+    "left": 20,
+    "top": 415,
+    "width": 28,
+    "height": 11
+  },
+  "fiveReset2": {
+    "left": 20,
+    "top": 300,
+    "width": 28,
+    "height": 11
+  },
+  "weekReset2": {
+    "left": 20,
+    "top": 426,
+    "width": 28,
+    "height": 11
+  },
+  "fiveReset3": {
+    "left": 20,
+    "top": 311,
+    "width": 28,
+    "height": 11
+  },
+  "weekReset3": {
+    "left": 20,
+    "top": 437,
+    "width": 28,
+    "height": 11
+  },
+  "fiveReset4": {
+    "left": 20,
+    "top": 322,
+    "width": 28,
+    "height": 11
+  },
+  "weekReset4": {
+    "left": 20,
+    "top": 448,
+    "width": 28,
+    "height": 11
+  }
+};
+let viewport = { scale: 1, left: 0, top: 0 };
+function imageStyle(name, overrides) {
+  const rect = Object.assign({}, BASE_LAYOUT[name], overrides || {});
+  return {
+    left: (rect.left * viewport.scale + viewport.left) + 'px',
+    top: (rect.top * viewport.scale + viewport.top) + 'px',
+    width: (rect.width * viewport.scale) + 'px',
+    height: (rect.height * viewport.scale) + 'px'
+  };
+}
+let connection = null;
+let tick = null;
+let expressionTick = null;
+let startup = null;
+let transportGeneration = 0;
+let lastBackAt = null;
+let timeout = null;
+let ready = false;
+let visible = false;
+let pendingId = '';
+let sequence = 0;
+let lastQuota = null;
+let lastDaily = null;
+let lastTraffic = null;
+let lastTrafficAt = 0;
+let lastServerAt = 0;
+let lastReceivedAt = 0;
+let lastVibrationState = null;
+let vibrationTimers = [];
+let lastTapAt = null;
+let waitingForApproval = false;
+let completionViewUntil = 0;
+let completionServerExpiry = null;
+
+function keepScreenAwake(enabled) {
+  try {
+    brightness.setKeepScreenOn({
+      keepScreenOn: enabled,
+      fail: function (_data, code) {
+        console.warn('[Nexo] 屏幕常亮设置失败', code);
+      }
+    });
+  } catch (error) {
+    console.warn('[Nexo] 当前设备无法设置屏幕常亮');
+  }
+}
+
+function remaining(used) {
+  return typeof used === 'number' && isFinite(used) ? Math.round(100 - Math.min(100, Math.max(0, used))) : null;
+}
+function glyph(kind, character) {
+  const names = { ':': 'colon', '/': 'slash', '-': 'dash', '.': 'dot', ' ': 'blank' };
+  return ROOT + kind + '-' + (names[character] || character) + '.png';
+}
+function moneyText(amount) {
+  if (amount >= 1000000) return (amount / 1000000).toFixed(1) + 'm';
+  if (amount >= 10000) return (amount / 10000).toFixed(1) + 'w';
+  return amount.toFixed(2);
+}
+
+export default {
+  private: {
+    showExpression: false,
+    expressionName: 'sleep',
+    expressionFrame: 0,
+    expressionImage: EXPRESSION_ROOT + 'sleep/0.png',
+    expressionImageStyle: imageStyle('expressionImage'),
+    statusDot: ROOT + 'status-idle.png',
+    statusDotStyle: imageStyle('statusDot'),
+    screenStyle: { width: '192px', height: '490px' },
+    hour1Style: imageStyle('hour1'),
+    hour2Style: imageStyle('hour2'),
+    colonStyle: imageStyle('colon'),
+    minute1Style: imageStyle('minute1'),
+    minute2Style: imageStyle('minute2'),
+    date0Style: imageStyle('date0'),
+    date1Style: imageStyle('date1'),
+    date2Style: imageStyle('date2'),
+    date3Style: imageStyle('date3'),
+    date4Style: imageStyle('date4'),
+    moneyLabelStyle: imageStyle('moneyLabel'),
+    moneySymbolStyle: imageStyle('moneySymbol'),
+    fiveImageStyle: imageStyle('fiveImage'),
+    weekImageStyle: imageStyle('weekImage'),
+    fiveResetLabelStyle: imageStyle('fiveResetLabel'),
+    weekResetLabelStyle: imageStyle('weekResetLabel'),
+    fiveReset0Style: imageStyle('fiveReset0'),
+    weekReset0Style: imageStyle('weekReset0'),
+    fiveReset1Style: imageStyle('fiveReset1'),
+    weekReset1Style: imageStyle('weekReset1'),
+    fiveReset2Style: imageStyle('fiveReset2'),
+    weekReset2Style: imageStyle('weekReset2'),
+    fiveReset3Style: imageStyle('fiveReset3'),
+    weekReset3Style: imageStyle('weekReset3'),
+    fiveReset4Style: imageStyle('fiveReset4'),
+    weekReset4Style: imageStyle('weekReset4'),
+    hour1: ROOT + 'clock-0.png',
+    hour2: ROOT + 'clock-0.png',
+    minute1: ROOT + 'clock-0.png',
+    minute2: ROOT + 'clock-0.png',
+    fiveImage: ROOT + 'ring-five-unknown.png',
+    weekImage: ROOT + 'ring-week-unknown.png',
+    moneyLabel: ROOT + 'money-label.png',
+    moneySymbol: ROOT + 'money-symbol.png',
+    moneyStyle0: imageStyle('money0'),
+    moneyStyle1: imageStyle('money1'),
+    moneyStyle2: imageStyle('money2'),
+    moneyStyle3: imageStyle('money3'),
+    moneyStyle4: imageStyle('money4'),
+    moneyStyle5: imageStyle('money5'),
+    moneyStyle6: imageStyle('money6'),
+    date0: ROOT + 'date-0.png',
+    fiveReset0: ROOT + 'small-dash.png',
+    weekReset0: ROOT + 'small-dash.png',
+    date1: ROOT + 'date-0.png',
+    fiveReset1: ROOT + 'small-dash.png',
+    weekReset1: ROOT + 'small-dash.png',
+    date2: ROOT + 'date-slash.png',
+    fiveReset2: ROOT + 'small-dash.png',
+    weekReset2: ROOT + 'small-dash.png',
+    date3: ROOT + 'date-0.png',
+    fiveReset3: ROOT + 'small-dash.png',
+    weekReset3: ROOT + 'small-dash.png',
+    date4: ROOT + 'date-0.png',
+    fiveReset4: ROOT + 'small-dash.png',
+    weekReset4: ROOT + 'small-dash.png',
+    money0: ROOT + 'money-blank.png',
+    money1: ROOT + 'money-blank.png',
+    money2: ROOT + 'money-blank.png',
+    money3: ROOT + 'money-blank.png',
+    money4: ROOT + 'money-blank.png',
+    money5: ROOT + 'money-blank.png',
+    money6: ROOT + 'money-blank.png'
+  },
+  applyViewport(width, height) {
+    if (!(width > 0 && height > 0)) return;
+    // designWidth=192 scales logical pixels to the physical display width.
+    const logicalHeight = height * 192 / width;
+    const scale = Math.min(1, logicalHeight / 490);
+    // Band 10/11 need a small optical correction along the landscape horizontal axis.
+    const landscapeOffset = width === 212 && height === 520 ? 6 * 192 / width : 0;
+    viewport = {
+      scale: scale,
+      left: (192 - 192 * scale) / 2,
+      top: (logicalHeight - 490 * scale) / 2 - landscapeOffset
+    };
+    this.screenStyle = { width: '192px', height: logicalHeight + 'px' };
+    const names = Object.keys(BASE_LAYOUT);
+    for (let i = 0; i < names.length; i++) {
+      const name = names[i];
+      const key = /^money[0-6]$/.test(name) ? 'moneyStyle' + name.charAt(5) : name + 'Style';
+      this[key] = imageStyle(name);
+    }
+    this.updateDisplay();
+  },
+  onShow() {
+    visible = true;
+    lastBackAt = null;
+    lastTapAt = null;
+    waitingForApproval = false;
+    completionViewUntil = 0;
+    completionServerExpiry = null;
+    this.showExpression = false;
+    this.stopExpressionAnimation();
+    this.applyViewport(192, 490);
+    try {
+      device.getInfo({ success: info => {
+        if (visible) this.applyViewport(Number(info.screenWidth), Number(info.screenHeight));
+      } });
+    } catch (error) { console.warn('[Nexo] 使用默认屏幕尺寸'); }
+    keepScreenAwake(true);
+    this.updateDisplay();
+    startup = setTimeout(() => { startup = null; this.openTransport(); }, 2000);
+    let seconds = 0;
+    tick = setInterval(() => {
+      this.updateDisplay();
+      seconds++;
+      if (seconds % (ready ? 15 : 5) === 0) this.refresh();
+    }, 1000);
+  },
+  onHide() { this.stop(); },
+  onDestroy() { this.stop(); },
+  stop() {
+    visible = false;
+    lastBackAt = null;
+    lastTapAt = null;
+    waitingForApproval = false;
+    completionViewUntil = 0;
+    completionServerExpiry = null;
+    this.showExpression = false;
+    this.stopExpressionAnimation();
+    this.cancelVibrationSequence();
+    lastTraffic = null;
+    this.statusDot = ROOT + 'status-idle.png';
+    keepScreenAwake(false);
+    clearInterval(tick);
+    clearTimeout(startup);
+    tick = null;
+    startup = null;
+    this.resetTransport();
+  },
+  exitApp() { this.stop(); router.back(); },
+  onBackPress() {
+    if (!visible) return true;
+    const now = Date.now();
+    if (lastBackAt !== null && now >= lastBackAt && now - lastBackAt <= DOUBLE_BACK_MS) {
+      this.stop();
+      return false;
+    }
+    lastBackAt = now;
+    lastTapAt = null;
+    return true;
+  },
+  handleTap() {
+    if (!visible) return;
+    lastBackAt = null;
+    const now = Date.now();
+    if (lastTapAt !== null && now >= lastTapAt && now - lastTapAt <= DOUBLE_TAP_MS) {
+      lastTapAt = null;
+      this.toggleView();
+    } else lastTapAt = now;
+  },
+  toggleView() {
+    if (!visible) return;
+    this.setExpressionView(!this.showExpression);
+    this.updateTraffic();
+  },
+  setExpressionView(show) {
+    if (this.showExpression === show) return;
+    lastTapAt = null;
+    this.showExpression = show;
+    if (show) this.startExpressionAnimation();
+    else this.stopExpressionAnimation();
+  },
+  syncTrafficView(previousState) {
+    if (!visible || !lastTraffic) return;
+    const state = lastTraffic.state;
+    if (state === 'waiting') {
+      // A new waiting phase opens the expression once. Subsequent polls respect manual switching.
+      if (!waitingForApproval) this.setExpressionView(true);
+      waitingForApproval = true;
+      completionViewUntil = 0;
+      completionServerExpiry = null;
+      return;
+    }
+    if (waitingForApproval) {
+      waitingForApproval = false;
+      if (state !== 'done') this.setExpressionView(false);
+    }
+    if (state === 'done') {
+      const expiry = typeof lastTraffic.expiresAt === 'number' && isFinite(lastTraffic.expiresAt) ? lastTraffic.expiresAt : null;
+      const sampledAt = typeof lastTraffic.sampledAt === 'number' && isFinite(lastTraffic.sampledAt) ? lastTraffic.sampledAt : null;
+      const remaining = expiry !== null && sampledAt !== null ? Math.max(0, Math.min(COMPLETION_VIEW_MS, expiry - sampledAt)) : COMPLETION_VIEW_MS;
+      const newCompletion = previousState !== 'done' || (expiry !== null && completionServerExpiry !== null && expiry > completionServerExpiry);
+      if (newCompletion) {
+        completionViewUntil = remaining > 0 ? Date.now() + remaining : 0;
+        this.setExpressionView(remaining > 0);
+      } else if (completionViewUntil > 0) {
+        // Repeated snapshots must not restart the ten-minute completion display.
+        completionViewUntil = Math.min(completionViewUntil, Date.now() + remaining);
+      }
+      completionServerExpiry = expiry;
+    } else {
+      if (completionViewUntil > 0) this.setExpressionView(false);
+      completionViewUntil = 0;
+      completionServerExpiry = null;
+    }
+  },
+  getExpressionState() {
+    if (waitingForApproval) return 'waiting';
+    if (completionViewUntil > Date.now()) return 'done';
+    return this.getTrafficState();
+  },
+  updateExpression(state) {
+    const expression = EXPRESSIONS[state] || EXPRESSIONS.idle;
+    if (this.expressionName === expression.name) return;
+    this.expressionName = expression.name;
+    this.expressionFrame = 0;
+    this.expressionImage = EXPRESSION_ROOT + expression.name + '/0.png';
+  },
+  advanceExpression() {
+    const state = this.getExpressionState();
+    const expression = EXPRESSIONS[state];
+    if (this.expressionName !== expression.name) {
+      this.updateExpression(state);
+      return;
+    }
+    this.expressionFrame = (this.expressionFrame + 1) % expression.frames;
+    this.expressionImage = EXPRESSION_ROOT + expression.name + '/' + this.expressionFrame + '.png';
+  },
+  startExpressionAnimation() {
+    this.stopExpressionAnimation();
+    if (!visible || !this.showExpression) return;
+    expressionTick = setInterval(() => this.advanceExpression(), EXPRESSION_FRAME_MS);
+  },
+  stopExpressionAnimation() {
+    if (expressionTick !== null) clearInterval(expressionTick);
+    expressionTick = null;
+  },
+  setDigits(key, text, kind, length) {
+    for (let i = 0; i < length; i++) this[key + i] = glyph(kind, text.charAt(i) || ' ');
+  },
+  setMoney(text) {
+    let position = 109;
+    for (let i = 0; i < 7; i++) {
+      const character = text.charAt(i) || ' ';
+      const width = character === '.' ? 4 : 12;
+      this['money' + i] = glyph('money', character);
+      this['moneyStyle' + i] = imageStyle('money' + i, { top: position, height: width });
+      position += width;
+    }
+  },
+  receiveTraffic(traffic) {
+    // Approval, required input and confirmed quota pauses share the red waiting state.
+    const incoming = traffic && ['idle','working','waiting','done'].indexOf(traffic.state) >= 0 ? traffic : null;
+    // A delayed poll response must not overwrite a newer pushed state or replay its alert.
+    if (incoming && lastTraffic && typeof incoming.sampledAt === 'number' &&
+        typeof lastTraffic.sampledAt === 'number' && incoming.sampledAt < lastTraffic.sampledAt) return;
+    const previousState = lastTraffic ? lastTraffic.state : 'idle';
+    lastTraffic = incoming;
+    lastTrafficAt = Date.now();
+    this.syncTrafficView(previousState);
+    this.updateTraffic();
+    if (lastTraffic) this.notifyTrafficChange(this.getTrafficState());
+  },
+  notifyTrafficChange(state) {
+    if (!visible || state === lastVibrationState) return;
+    lastVibrationState = state;
+    this.cancelVibrationSequence();
+    if (state !== 'done' && state !== 'waiting') return;
+
+    const pattern = state === 'waiting' ? WAITING_VIBRATION_PATTERN : COMPLETION_VIBRATION_PATTERN;
+    this.vibrate(pattern[0].mode);
+    for (let pulse = 1; pulse < pattern.length; pulse++) {
+      vibrationTimers.push(setTimeout(() => {
+        if (visible && lastVibrationState === state) this.vibrate(pattern[pulse].mode);
+      }, pattern[pulse].at));
+    }
+  },
+  vibrate(mode) {
+    try {
+      vibrator.vibrate({ mode: mode });
+    } catch (error) {
+      console.warn('[Nexo] 震动提示暂不可用');
+    }
+  },
+  cancelVibrationSequence() {
+    for (let index = 0; index < vibrationTimers.length; index++) {
+      clearTimeout(vibrationTimers[index]);
+    }
+    vibrationTimers = [];
+  },
+  getTrafficState() {
+    const elapsed = Date.now() - lastTrafficAt;
+    let state = lastTraffic && elapsed >= 0 && elapsed < 45000 ? lastTraffic.state : 'idle';
+    if (state === 'done' && typeof lastTraffic.expiresAt === 'number' && typeof lastTraffic.sampledAt === 'number' && lastTraffic.sampledAt + elapsed >= lastTraffic.expiresAt) state = 'idle';
+    return state;
+  },
+  updateTraffic() {
+    if (completionViewUntil > 0 && Date.now() >= completionViewUntil) {
+      completionViewUntil = 0;
+      this.setExpressionView(false);
+    }
+    const state = this.getTrafficState();
+    this.updateExpression(this.getExpressionState());
+    this.statusDot = ROOT + 'status-' + state + '.png';
+  },
+  updateDisplay() {
+    this.updateTraffic();
+    const now = new Date();
+    const hours = ('0' + now.getHours()).slice(-2);
+    const minutes = ('0' + now.getMinutes()).slice(-2);
+    this.hour1 = glyph('clock', hours.charAt(0));
+    this.hour2 = glyph('clock', hours.charAt(1));
+    this.minute1 = glyph('clock', minutes.charAt(0));
+    this.minute2 = glyph('clock', minutes.charAt(1));
+    const date = ('0' + (now.getMonth() + 1)).slice(-2) + '/' + ('0' + now.getDate()).slice(-2);
+    this.setDigits('date', date, 'date', 5);
+    const elapsed = Date.now() - lastReceivedAt;
+    const serverNow = lastServerAt + elapsed;
+    const age = lastQuota && typeof lastQuota.sampledAt === 'number' ? serverNow - lastQuota.sampledAt : Infinity;
+    const recent = lastReceivedAt > 0 && elapsed >= 0 && elapsed < 60000;
+    const fresh = lastQuota && lastQuota.authoritative === true && age >= -60000 && age < 300000 && recent;
+    const fiveExpired = lastQuota && typeof lastQuota.reset5hAt === 'number' && lastQuota.reset5hAt <= serverNow;
+    const weekExpired = lastQuota && typeof lastQuota.reset7dAt === 'number' && lastQuota.reset7dAt <= serverNow;
+    const five = fresh && !fiveExpired ? remaining(lastQuota.pct5h) : null;
+    const week = fresh && !weekExpired ? remaining(lastQuota.pct7d) : null;
+    this.fiveImage = ROOT + 'ring-five-' + (five === null ? 'unknown' : five) + '.png';
+    this.weekImage = ROOT + 'ring-week-' + (week === null ? 'unknown' : week) + '.png';
+    this.setDigits('fiveReset', five !== null && /^\d{2}:\d{2}$/.test(lastQuota.reset5hClock || '') ? lastQuota.reset5hClock : '--:--', 'small', 5);
+    this.setDigits('weekReset', week !== null && /^\d{2}\/\d{2}$/.test(lastQuota.reset7dDate || '') ? lastQuota.reset7dDate : '--/--', 'small', 5);
+    const today = now.getFullYear() + '-' + ('0' + (now.getMonth() + 1)).slice(-2) + '-' + ('0' + now.getDate()).slice(-2);
+    const costFresh = lastDaily && recent && lastDaily.date === today && serverNow - lastDaily.updatedAt < 90000 && serverNow - lastDaily.updatedAt >= -60000;
+    const amount = costFresh && typeof lastDaily.cny === 'number' && isFinite(lastDaily.cny) && lastDaily.cny >= 0 ? moneyText(lastDaily.cny) : '--';
+    this.setMoney(amount);
+    this.moneyLabel = ROOT + (costFresh && lastDaily.incomplete ? 'money-partial' : 'money-label') + '.png';
+    this.moneySymbol = ROOT + (costFresh && lastDaily.incomplete ? 'money-symbol-partial' : 'money-symbol') + '.png';
+  },
+  resetTransport() {
+    transportGeneration++;
+    clearTimeout(timeout);
+    timeout = null;
+    pendingId = '';
+    ready = false;
+    if (connection) {
+      connection.onmessage = function () {};
+      connection.onerror = function () {};
+    }
+    connection = null;
+  },
+  openTransport() {
+    if (!visible) return;
+    try {
+      connection = interconnect.instance();
+      const generation = ++transportGeneration;
+      connection.onmessage = (event) => {
+        if (!visible || generation !== transportGeneration) return;
+        try {
+          let packet = event && event.data ? event.data : event;
+          if (typeof packet === 'string') packet = JSON.parse(packet);
+          if (packet.tag === 'traffic') { this.receiveTraffic(packet.traffic); return; }
+          if (packet.tag === '__hs__') {
+            if (ready || pendingId || !timeout) return;
+            clearTimeout(timeout);
+            timeout = null;
+            ready = true;
+            this.refresh();
+          } else if (packet.tag === 'fetch' && packet.id === pendingId) {
+            clearTimeout(timeout);
+            timeout = null;
+            pendingId = '';
+            if (!packet.resp || !packet.resp.ok) return;
+            const body = typeof packet.resp.body === 'string' ? JSON.parse(packet.resp.body) : packet.resp.body;
+            if (!body || !body.limits || !body.limits.codex) return;
+            this.receiveTraffic(body.traffic);
+            lastQuota = body.limits.codex;
+            lastDaily = body.daily || null;
+            lastServerAt = typeof body.ts === "number" ? body.ts : Date.now();
+            lastReceivedAt = Date.now();
+            this.updateDisplay();
+          }
+        } catch (error) { this.resetTransport(); }
+      };
+      connection.onerror = () => { if (visible && generation === transportGeneration) this.resetTransport(); };
+      this.handshake();
+    } catch (error) { this.resetTransport(); }
+  },
+  handshake() {
+    if (!visible || !connection || timeout) return;
+    const generation = transportGeneration;
+    const failed = () => { if (visible && generation === transportGeneration && !ready && !pendingId) this.resetTransport(); };
+    timeout = setTimeout(failed, 6000);
+    try {
+      connection.send({
+        data: { tag: '__hs__', count: 0, caps: { version: 3, chunk: true, maxChunkSize: 768, encodings: ['text'], ack: true } },
+        fail: failed
+      });
+    } catch (error) { failed(); }
+  },
+  refresh() {
+    if (!visible || pendingId || timeout) return;
+    if (!connection) { this.openTransport(); return; }
+    if (!ready) { this.handshake(); return; }
+    pendingId = 'b9-' + (++sequence);
+    const requestId = pendingId;
+    const generation = transportGeneration;
+    const failed = () => { if (visible && generation === transportGeneration && pendingId === requestId) this.resetTransport(); };
+    timeout = setTimeout(failed, 6000);
+    try {
+      connection.send({
+        data: { tag: 'fetch', id: pendingId, url: 'http://127.0.0.1:18765/api/status/compact?all=1', options: { method: 'GET' } },
+        fail: failed
+      });
+    } catch (error) { failed(); }
+  }
+};
+</script>
