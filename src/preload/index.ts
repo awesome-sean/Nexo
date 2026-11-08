@@ -68,6 +68,8 @@ contextBridge.exposeInMainWorld('pulse', {
   },
   getExchangeRate: () => invoke('nexo:get-exchange-rate'),
   setExchangeRate: (rate: number) => invoke('nexo:set-exchange-rate', rate),
+  getBandSettings: () => invoke('nexo:get-band-settings'),
+  setBandVibration: (enabled: boolean) => invoke('nexo:set-band-vibration', enabled),
   checkUpdate: () => invoke('pulse:check-update'),
   openRelease: (url: string) => invoke('pulse:open-release', url),
   downloadUpdate: () => invoke('pulse:download-update'),

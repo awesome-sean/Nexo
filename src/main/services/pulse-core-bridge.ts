@@ -10,6 +10,7 @@ import { getHookStatus } from './codex-hook-install';
 import { buildDiagnosticReport, probeJson } from './diagnostics';
 import { shouldConnectBand, type BandConnectionReason } from './pulse-core-policy';
 import { formatDiagnosticReport, formatErrorLog } from './support-report';
+import type { BandSettings } from '../../common/band-settings';
 
 export interface PulseCoreState {
   daemon: {
@@ -70,7 +71,7 @@ export class PulseCoreBridge {
   private connectTask: Promise<{ ok: boolean; error?: string; device?: unknown }> | null = null;
   private detached = false;
 
-  constructor(private client: PulseCoreClient) {
+  constructor(private client: PulseCoreClient, getBandSettings?: () => BandSettings) {
     this.responder = new DirectFetchBridge(client, {
       onRequest: () => {
         /* 计数统一在 device.interconnect 监听里做 */
@@ -78,7 +79,7 @@ export class PulseCoreBridge {
       onResponse: ({ latencyMs }) => {
         this.state.bridge.lastLatencyMs = latencyMs;
       },
-    });
+    }, getBandSettings);
     this.state = {
       daemon: {
         rpcConnected: false,
@@ -182,6 +183,10 @@ export class PulseCoreBridge {
 
   pushTraffic(traffic:import('../../common/codex-traffic').TrafficSnapshot):void {
     void this.responder.pushTraffic(traffic).catch(()=>{});
+  }
+
+  pushBandSettings(): void {
+    void this.responder.pushBandSettings().catch(() => {});
   }
 
   private ensureReady(): Promise<void> {

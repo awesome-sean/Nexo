@@ -4,11 +4,12 @@ import type { CodexTrafficService } from './codex-traffic-store';
 import { aggregateTraffic } from '../../common/codex-traffic';
 import { QuotaCollector } from './quota-collector';
 import { pushError } from './error-log';
+import { DEFAULT_BAND_SETTINGS, type BandSettings } from '../../common/band-settings';
 
 export class StatusServer {
   private server:http.Server|null=null;
   private quotaCollector=new QuotaCollector();
-  constructor(private sessionManager:SessionManager,private port=18765,private traffic?:CodexTrafficService) {}
+  constructor(private sessionManager:SessionManager,private port=18765,private traffic?:CodexTrafficService,private getBandSettings:()=>BandSettings=()=>({...DEFAULT_BAND_SETTINGS})) {}
   getQuotas() { return this.quotaCollector.getQuotas(); }
   getTrafficLight() { return this.traffic?.getSnapshot() ?? aggregateTraffic([]); }
   getExchangeRate() { return this.quotaCollector.getExchangeRate(); }
@@ -38,7 +39,7 @@ export class StatusServer {
       const now=Date.now();
       const codex={...quota,reset5hClock:quota.reset5hAt ? new Date(quota.reset5hAt).toTimeString().slice(0,5) : null,reset7dDate:quota.reset7dAt ? String(new Date(quota.reset7dAt).getMonth()+1).padStart(2,'0')+'/'+String(new Date(quota.reset7dAt).getDate()).padStart(2,'0') : null};
       res.writeHead(200,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
-      res.end(JSON.stringify({active:traffic.state!=='idle',ts:now,timestamp:now,traffic,
+      res.end(JSON.stringify({active:traffic.state!=='idle',ts:now,timestamp:now,traffic,bandSettings:this.getBandSettings(),
         session,sessions:{codex:session},daily:quotas.dailyUsage || null,
         limits:url.pathname.endsWith('/compact') ? {codex} : {...quotas,codex},
         quotaMeta:this.quotaCollector.getQuotaMeta(),

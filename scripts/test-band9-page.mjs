@@ -419,6 +419,63 @@ test('leaving completion cancels the remaining long pulses', () => {
   p.onHide();
 });
 
+test('muting a live alert cancels its remaining pulses and enabling does not replay it', () => {
+  const {page:p,vibrations,timerDelays} = page();
+  p.onShow();
+  const now = Date.now();
+  p.receiveTraffic({state:'waiting',sampledAt:now});
+  assert.deepEqual(vibrations,['short']);
+  p.receiveBandSettings({vibrationEnabled:false,revision:2});
+  assert.deepEqual([...timerDelays.values()],[2000]);
+  p.receiveBandSettings({vibrationEnabled:true,revision:1});
+  p.receiveTraffic({state:'done',sampledAt:now+1,expiresAt:now+600000});
+  assert.deepEqual(vibrations,['short']);
+  assert.equal(p.expressionName,'star');
+  assert.match(p.statusDot,/status-done\.png$/);
+  p.receiveBandSettings({vibrationEnabled:true,revision:3});
+  p.receiveTraffic({state:'done',sampledAt:now+2,expiresAt:now+600000});
+  assert.deepEqual(vibrations,['short']);
+  p.receiveTraffic({state:'working',sampledAt:now+3});
+  p.receiveTraffic({state:'waiting',sampledAt:now+4});
+  assert.deepEqual(vibrations,['short','short']);
+  p.onHide();
+});
+
+test('saved mute is applied before traffic from polling, handshake and live push packets', () => {
+  const {page:p,sent,connection,runTimer,vibrations} = page();
+  p.onShow();runTimer();
+  connection.onmessage({data:{tag:'__hs__',bandSettings:{vibrationEnabled:false,revision:5}}});
+  const now=Date.now();
+  connection.onmessage({data:{tag:'fetch',id:sent.at(-1).id,resp:{ok:true,body:JSON.stringify({
+    bandSettings:{vibrationEnabled:false,revision:5},traffic:{state:'waiting',sampledAt:now},limits:{codex:{pct5h:50}},
+  })}}});
+  assert.equal(p.getTrafficState(),'waiting');
+  assert.equal(vibrations.length,0);
+  p.onHide();p.onShow();runTimer();
+  connection.onmessage({data:{tag:'traffic',bandSettings:{vibrationEnabled:false,revision:5},traffic:{state:'done',sampledAt:now+1}}});
+  assert.equal(p.getTrafficState(),'done');
+  assert.equal(vibrations.length,0);
+  connection.onmessage({data:{tag:'band-settings',bandSettings:{vibrationEnabled:true,revision:6}}});
+  connection.onmessage({data:{tag:'traffic',traffic:{state:'working',sampledAt:now+2}}});
+  connection.onmessage({data:{tag:'traffic',traffic:{state:'waiting',sampledAt:now+3}}});
+  assert.deepEqual(vibrations,['short']);
+  p.onHide();
+});
+
+test('poll settings mute alerts even without quota data and old snapshots cannot unmute them', () => {
+  const {page:p,sent,connection,runTimer,vibrations}=page();
+  p.onShow();runTimer();
+  connection.onmessage({data:{tag:'__hs__'}});
+  connection.onmessage({data:{tag:'fetch',id:sent.at(-1).id,resp:{ok:true,body:{bandSettings:{vibrationEnabled:false,revision:8}}}}});
+  connection.onmessage({data:{tag:'traffic',bandSettings:{vibrationEnabled:true,revision:7},traffic:{state:'waiting',sampledAt:Date.now()}}});
+  assert.equal(vibrations.length,0);
+  assert.equal(p.showExpression,true);
+  p.receiveBandSettings({vibrationEnabled:'true',revision:9});
+  p.vibrate('long');
+  assert.equal(vibrations.length,0);
+  p.onHide();
+});
+
 test('vibration API failure preserves the task display and declarations include the capability', () => {
   const {page: p} = page(undefined, () => {throw new Error('unavailable');});
   p.onShow();

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ChevronDown, ExternalLink, ShieldCheck } from 'lucide-react';
 import type { HookStatus } from '../../../main/services/codex-hook-install';
 import { AgentLogo } from './AgentLogo';
+import { BandVibrationSettings } from './BandVibrationSettings';
 import waitingExpression from '../../../../band-app/src/common/expressions/smirk/8.png';
 import workingExpression from '../../../../band-app/src/common/expressions/naughty/4.png';
 import doneExpression from '../../../../band-app/src/common/expressions/star/8.png';
@@ -56,6 +57,7 @@ export function CodexHooksCard() {
     </div>
     {notice && <p className="nexo-hook-guide" role="status">{notice}</p>}
     <div className="nexo-traffic-legend"><span data-state="waiting">红灯 · 等待处理 / 额度暂停</span><span data-state="working">黄灯 · 正在工作</span><span data-state="done">绿灯 · 最近完成</span><span>空闲 · 无灯</span></div>
+    <BandVibrationSettings />
     <details className="workspace-hook-help">
       <summary>如何启用状态联动<ChevronDown size={15} /></summary>
       <ol>

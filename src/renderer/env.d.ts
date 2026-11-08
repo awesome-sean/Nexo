@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
 import type { MiniBarSettings } from '../common/minibar-settings';
+import type { BandSettings } from '../common/band-settings';
 
 declare module '*.css' {
   const content: Record<string, string>;
@@ -151,6 +152,8 @@ export interface PulseBridge {
   onAutoLaunchChange: (cb: (enabled: boolean) => void) => () => void;
   getExchangeRate: () => Promise<number>;
   setExchangeRate: (rate: number) => Promise<number>;
+  getBandSettings: () => Promise<BandSettings>;
+  setBandVibration: (enabled: boolean) => Promise<BandSettings>;
   checkUpdate: () => Promise<{
     ok: boolean;
     currentVersion: string;

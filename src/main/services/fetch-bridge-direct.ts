@@ -17,6 +17,7 @@
  */
 import { PulseCoreClient } from './pulse-core-client';
 import { pushError } from './error-log';
+import { DEFAULT_BAND_SETTINGS, type BandSettings } from '../../common/band-settings';
 
 export const BAND_PACKAGE = 'com.codeisland.band';
 
@@ -43,10 +44,15 @@ export class DirectFetchBridge {
   constructor(
     private client: PulseCoreClient,
     private metrics: DirectBridgeMetrics,
+    private getBandSettings: () => BandSettings = () => ({ ...DEFAULT_BAND_SETTINGS }),
   ) {}
 
   async pushTraffic(traffic: import('../../common/codex-traffic').TrafficSnapshot):Promise<void> {
-    if(this.running && this.client.connected) await this.send(BAND_PACKAGE,{tag:'traffic',traffic});
+    if(this.running && this.client.connected) await this.send(BAND_PACKAGE,{tag:'traffic',traffic,bandSettings:this.getBandSettings()});
+  }
+
+  async pushBandSettings(): Promise<void> {
+    if (this.running && this.client.connected) await this.send(BAND_PACKAGE, { tag: 'band-settings', bandSettings: this.getBandSettings() });
   }
 
   start(): void {
@@ -95,7 +101,7 @@ export class DirectFetchBridge {
   private async handleHandshake(packet: any): Promise<void> {
     const count = Number(packet.count) || 0;
     if (count < 2) {
-      await this.send(BAND_PACKAGE, { tag: '__hs__', count: count + 1, caps: LOCAL_CAPS });
+      await this.send(BAND_PACKAGE, { tag: '__hs__', count: count + 1, caps: LOCAL_CAPS, bandSettings: this.getBandSettings() });
     }
   }
 

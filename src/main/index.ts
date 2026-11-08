@@ -28,6 +28,7 @@ import {
 import { deviceConfigService, type PairedBandDevice } from './services/device-config-service';
 import { AstroBoxImportService } from './services/astrobox-import';
 import { getCoreLocalAppData } from './services/pulse-core-client';
+import { BandSettingsStore } from './services/band-settings-store';
 
 // Ensure single instance
 const gotLock = app.requestSingleInstanceLock();
@@ -56,7 +57,8 @@ let isQuitting = false;
 const sessionManager = new SessionManager();
 const codexTailer = new CodexSessionTailer(sessionManager);
 const traffic = new CodexTrafficService();
-const statusServer = new StatusServer(sessionManager,18765,traffic);
+const bandSettings = new BandSettingsStore(path.join(app.getPath('userData'), 'band-settings.json'));
+const statusServer = new StatusServer(sessionManager,18765,traffic,()=>bandSettings.get());
 const hookInstaller = new CodexHookInstaller(path.resolve(import.meta.dirname,'../../assets/nexo-cli.cjs'),codexHookDirectory(),process.execPath);
 const resolveSessionDetection = (): Partial<Record<AgentKind, SessionDetectionMode>> => ({codex:codexTailer.isEventDriven ? 'event' : 'polling'});
 sessionManager.on('update', sessions => traffic.trackSessions(sessions));
@@ -65,7 +67,7 @@ statusServer.start();
 // 有效手环配置在启动后自动恢复连接，首次导入仍由设置向导完成。
 const coreClient = new PulseCoreClient();
 const astroBoxImport = new AstroBoxImportService(path.join(getCoreLocalAppData(), 'astrobox-identity.json'), deviceConfigService);
-const coreBridge = new PulseCoreBridge(coreClient);
+const coreBridge = new PulseCoreBridge(coreClient,()=>bandSettings.get());
 traffic.on('update', snapshot => { publishMiniBarState(); coreBridge.pushTraffic(snapshot); });
 traffic.on('quit',()=>quitPulse());
 const coreAppInstallBridge = new CoreAppInstallBridge(coreClient);
@@ -193,6 +195,12 @@ ipcMain.handle('get-initial-sessions', () => {
 ipcMain.handle('pulse:get-app-version', () => app.getVersion());
 ipcMain.handle('nexo:get-auto-launch', () => getAutoLaunch());
 ipcMain.handle('nexo:set-auto-launch', (_, enabled: boolean) => setAutoLaunch(enabled));
+ipcMain.handle('nexo:get-band-settings', () => bandSettings.get());
+ipcMain.handle('nexo:set-band-vibration', (_event, enabled: unknown) => {
+  const settings = bandSettings.setVibration(enabled);
+  coreBridge.pushBandSettings();
+  return settings;
+});
 ipcMain.handle('nexo:open-codex', async () => {
   const result = await openCodexWindow();
   if (!result.ok) void dialog.showMessageBox({ type: 'warning', title: '打开 Codex', message: result.error });

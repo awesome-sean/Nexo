@@ -353,6 +353,8 @@ let lastServerAt = 0;
 let lastReceivedAt = 0;
 let lastVibrationState = null;
 let vibrationTimers = [];
+let vibrationEnabled = true;
+let bandSettingsRevision = 0;
 let lastTapAt = null;
 let waitingForApproval = false;
 let completionViewUntil = 0;
@@ -636,6 +638,14 @@ export default {
       position += width;
     }
   },
+  receiveBandSettings(settings) {
+    if (!settings || typeof settings.vibrationEnabled !== 'boolean') return;
+    const revision = typeof settings.revision === 'number' && isFinite(settings.revision) && settings.revision >= 0 ? settings.revision : 0;
+    if (revision < bandSettingsRevision) return;
+    bandSettingsRevision = revision;
+    vibrationEnabled = settings.vibrationEnabled;
+    if (!vibrationEnabled) this.cancelVibrationSequence();
+  },
   receiveTraffic(traffic) {
     // Approval, required input and confirmed quota pauses share the red waiting state.
     const incoming = traffic && ['idle','working','waiting','done'].indexOf(traffic.state) >= 0 ? traffic : null;
@@ -653,6 +663,7 @@ export default {
     if (!visible || state === lastVibrationState) return;
     lastVibrationState = state;
     this.cancelVibrationSequence();
+    if (!vibrationEnabled) return;
     if (state !== 'done' && state !== 'waiting') return;
 
     const pattern = state === 'waiting' ? WAITING_VIBRATION_PATTERN : COMPLETION_VIBRATION_PATTERN;
@@ -664,6 +675,7 @@ export default {
     }
   },
   vibrate(mode) {
+    if (!vibrationEnabled) return;
     try {
       vibrator.vibrate({ mode: mode });
     } catch (error) {
@@ -744,6 +756,8 @@ export default {
         try {
           let packet = event && event.data ? event.data : event;
           if (typeof packet === 'string') packet = JSON.parse(packet);
+          this.receiveBandSettings(packet.bandSettings);
+          if (packet.tag === 'band-settings') return;
           if (packet.tag === 'traffic') { this.receiveTraffic(packet.traffic); return; }
           if (packet.tag === '__hs__') {
             if (ready || pendingId || !timeout) return;
@@ -757,6 +771,7 @@ export default {
             pendingId = '';
             if (!packet.resp || !packet.resp.ok) return;
             const body = typeof packet.resp.body === 'string' ? JSON.parse(packet.resp.body) : packet.resp.body;
+            if (body) this.receiveBandSettings(body.bandSettings);
             if (!body || !body.limits || !body.limits.codex) return;
             this.receiveTraffic(body.traffic);
             lastQuota = body.limits.codex;
