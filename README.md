@@ -4,8 +4,7 @@
     <img src="assets/desktop-mark.svg" width="88" height="88" alt="Nexo Logo" />
   </picture>
   <h1>Nexo</h1>
-  <p>把 Codex 的额度和任务状态，放到 Windows 桌面与小米手环上。</p>
-  <p>黄灯继续工作，红灯提醒回应，绿灯可以验收。</p>
+  <p>把ChatGPT/Codex的额度和任务状态，放到 Windows 桌面与小米手环上。</p>
 </div>
 
 [下载安装包](https://github.com/sthess548/Nexo/releases/latest) · [使用说明](#使用说明) · [源码构建](docs/BUILDING.md) · [反馈问题](https://github.com/sthess548/Nexo/issues)
