@@ -15,9 +15,9 @@
 </p>
 
 - **Windows 桌面悬浮窗**。下载并安装电脑端 EXE 即可使用。<br>
-  EXE 下载地址　[https://github.com/sthess548/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe](https://github.com/sthess548/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe)
+  最新 EXE 下载地址　[https://github.com/sthess548/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe](https://github.com/sthess548/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe)
 - **小米手环横屏桌搭**。需要电脑端 EXE 和手环 RPK，连接后联动使用。<br>
-  RPK 下载地址　[https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Band-1.0.0.rpk](https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Band-1.0.0.rpk)
+  最新 RPK 下载地址　[https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Band-1.0.0.rpk](https://github.com/sthess548/Nexo/releases/download/v1.0.0/Nexo-Band-1.0.0.rpk)
 
 ## 版本更新
 
