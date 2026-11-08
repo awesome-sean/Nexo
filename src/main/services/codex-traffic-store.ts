@@ -87,11 +87,13 @@ export class CodexTrafficService extends EventEmitter {
     for (const session of sessions) {
       if (session.agent !== 'codex') continue;
       const current = this.tasks.get(session.id);
-      if (current && current.updatedAt >= session.updatedAt) continue;
-      const state = session.status === 'waiting' || session.status === 'error' ? 'waiting' : session.status === 'completed' ? 'done' : session.status === 'thinking' || session.status === 'running_tool' ? 'working' : 'idle';
+      if (current && current.updatedAt >= session.updatedAt && !session.pendingInputIds?.length && !session.resolvedInputIds?.length && !session.clearPendingInputs) continue;
+      const state = session.status === 'waiting' ? 'waiting' : session.status === 'completed' ? 'done' : session.status === 'thinking' || session.status === 'running_tool' ? 'working' : 'idle';
       if(current?.source === 'cli') continue;
-      if(current?.source === 'hook' && state !== 'working' && session.trafficWaitReason !== 'quota') continue;
-      applyTrafficEvent(this.tasks,{id:session.id,sessionId:session.id,state,source:'session',at:session.updatedAt,workspace:session.cwd,waitReason:session.trafficWaitReason});
+      const explicitInput = session.pendingInputIds?.length || session.resolvedInputIds?.length || session.clearPendingInputs;
+      if(current?.source === 'hook' && state !== 'working' && session.trafficWaitReason !== 'quota' && !explicitInput) continue;
+      applyTrafficEvent(this.tasks,{id:session.id,sessionId:session.id,state,source:'session',at:session.updatedAt,workspace:session.cwd,waitReason:session.trafficWaitReason,
+        inputOpened:session.pendingInputIds,inputResolved:session.resolvedInputIds,resetInputs:session.clearPendingInputs});
       changed = true;
     }
     if (changed) { this.save(); this.publish(); }

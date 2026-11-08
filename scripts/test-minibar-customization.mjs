@@ -192,6 +192,18 @@ function runtime(initialPreferences = {}, nativeMinimum = { width: 0, height: 0 
   };
 }
 
+test('startup floating visibility follows the saved user switch', () => {
+  for (const visible of [true, false]) {
+    const state = runtime({visible});
+    try {
+      assert.equal(state.window.visible,false);
+      state.window.emit('ready-to-show');
+      assert.equal(state.window.visible,visible);
+      assert.equal(state.preferences().visible,visible);
+    } finally {state.cleanup();}
+  }
+});
+
 test('one to three agents keep stable anchors through all dock transitions', () => {
   for (let count = 1; count <= 3; count++) {
     for (const side of ['left', 'right', 'top', 'bottom']) {

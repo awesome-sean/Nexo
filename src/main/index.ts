@@ -11,7 +11,7 @@ import { StatusServer } from './services/status-server';
 import { PulseCoreClient } from './services/pulse-core-client';
 import { PulseCoreBridge } from './services/pulse-core-bridge';
 import { createTray } from './tray';
-import { getAutoLaunch, setAutoLaunch } from './services/auto-launch';
+import { getAutoLaunch, setAutoLaunch, isAutoStartLaunch, migrateAutoLaunchEntry } from './services/auto-launch';
 import { openCodexWindow } from './services/open-codex';
 import { DesktopUpdateService } from './services/update-service';
 import { launchUpdate } from './services/launch-update';
@@ -36,7 +36,11 @@ if (!gotLock) {
   process.exit(0);
 }
 
-app.on('second-instance', () => {
+let showMainOnReady = !isAutoStartLaunch();
+
+app.on('second-instance', (_event, commandLine) => {
+  if (isAutoStartLaunch(commandLine)) return;
+  showMainOnReady = true;
   if (win) {
     if (win.isMinimized()) win.restore();
     win.show();
@@ -127,7 +131,7 @@ function createWindow() {
   });
 
   win.once('ready-to-show', () => {
-    if (!win) return;
+    if (!win || !showMainOnReady) return;
     win.show();
     win.focus();
     console.log('[Nexo] Window ready-to-show fired, visible at', win.getBounds());
@@ -252,6 +256,8 @@ ipcMain.on('window-maximize', () => {
 });
 
 app.whenReady().then(async () => {
+  try { migrateAutoLaunchEntry(); }
+  catch (error) { console.warn('[Nexo] 开机启动参数迁移失败', error); }
   createWindow();
   createMiniBarWindow(sessionManager, statusServer, resolveSessionDetection);
   ipcMain.handle('hook:status',()=>hookInstaller.status());

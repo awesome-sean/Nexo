@@ -64,6 +64,9 @@ export class SessionManager extends EventEmitter {
     } else {
       if (patch.status) session.status = patch.status;
       if (patch.status) session.trafficWaitReason = patch.trafficWaitReason;
+      if (patch.pendingInputIds !== undefined) session.pendingInputIds = patch.pendingInputIds;
+      session.resolvedInputIds = patch.resolvedInputIds;
+      session.clearPendingInputs = patch.clearPendingInputs;
       if (patch.startedAt !== undefined) session.startedAt = patch.startedAt;
       if (patch.cwd) session.cwd = patch.cwd;
       if (patch.lastMessage !== undefined) session.lastMessage = patch.lastMessage;

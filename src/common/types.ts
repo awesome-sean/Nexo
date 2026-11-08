@@ -21,6 +21,9 @@ export interface AgentSession {
   durationSeconds: number;
   error?: string;
   trafficWaitReason?: import('./codex-traffic').TrafficWaitReason;
+  pendingInputIds?: string[];
+  resolvedInputIds?: string[];
+  clearPendingInputs?: boolean;
 }
 
 export interface IslandState {

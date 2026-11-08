@@ -1,6 +1,6 @@
 {
   "name": "nexo-band",
-  "version": "0.4.13",
+  "version": "1.0.0",
   "description": "Codex quota and task companion for Windows and Xiaomi Smart Band 9/10/11",
   "type": "module",
   "repository": {

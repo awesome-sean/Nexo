@@ -42,6 +42,7 @@ var import_node_crypto = require("node:crypto");
 
 // src/common/codex-traffic.ts
 var DONE_DURATION_MS = 10 * 6e4;
+var APPROVAL_GRACE_MS = 2e3;
 function isTrafficState(value) {
   return value === "idle" || value === "working" || value === "waiting" || value === "done";
 }
@@ -54,7 +55,8 @@ function aggregateTraffic(tasks, now = Date.now()) {
       if (expiry <= now) continue;
       expiresAt = Math.max(expiresAt ?? 0, expiry);
     }
-    counts[task.state]++;
+    const awaitingApproval = task.state === "waiting" && task.waitReason === "approval" && now - task.updatedAt < APPROVAL_GRACE_MS;
+    counts[awaitingApproval ? "working" : task.state]++;
   }
   const state = counts.waiting ? "waiting" : counts.working ? "working" : counts.done ? "done" : "idle";
   return { state, counts, sampledAt: now, expiresAt: state === "done" ? expiresAt : null };
@@ -70,29 +72,102 @@ function applyTrafficEvent(tasks, event) {
   }
   if (!event.state) return;
   const current = tasks.get(event.id);
-  if (current && current.updatedAt > event.at) return;
+  const inputChange = !!(event.inputOpened?.length || event.inputResolved?.length || event.resetInputs);
+  const stale = !!current && current.updatedAt > event.at;
+  if (stale && !inputChange) return;
   if (current && current.source !== "session" && event.source === "session") {
-    if (current.source === "cli" || event.state !== "working" && event.waitReason !== "quota") return;
+    if (current.source === "cli" || !inputChange && event.state !== "working" && event.waitReason !== "quota") return;
   }
-  if (current?.waitReason === "quota" && (event.hookEvent === "Stop" || event.hookEvent === "SubagentStop") && event.state === "done") return;
+  if ((current?.quotaPaused || current?.waitReason === "quota") && (event.hookEvent === "Stop" || event.hookEvent === "SubagentStop") && event.state === "done") return;
+  let quotaPaused = current?.quotaPaused || current?.waitReason === "quota";
+  if (!stale && event.waitReason === "quota") quotaPaused = true;
+  else if (!stale && (event.state === "idle" || event.state === "working" && !event.inputResolved?.length && !event.inputOpened?.length)) quotaPaused = false;
+  const pending = new Set(current?.pendingInputIds || []);
+  const resolved = new Set(current?.resolvedInputIds || []);
+  if (event.resetInputs) {
+    for (const id of pending) resolved.add(id);
+    pending.clear();
+  }
+  for (const id of event.inputResolved || []) {
+    resolved.add(id);
+    for (const openId of pending) if (openId === id || openId.startsWith(id + ":")) pending.delete(openId);
+  }
+  for (const id of event.inputOpened || []) {
+    if (![...resolved].some((closedId) => id === closedId || id.startsWith(closedId + ":"))) pending.add(id);
+  }
+  let state = stale ? current.state : event.state;
+  let waitReason = stale ? current.waitReason : event.waitReason;
+  if (quotaPaused) {
+    state = "waiting";
+    waitReason = "quota";
+  } else if (pending.size) {
+    state = "waiting";
+    waitReason = "input";
+  } else if (state === "waiting" && waitReason === "input" && current?.pendingInputIds?.length) {
+    state = "working";
+    waitReason = void 0;
+  } else if (state === "waiting" && waitReason === "input" && event.inputOpened?.length) {
+    state = current?.state || "working";
+    waitReason = current?.waitReason;
+  }
   const source = current?.source === "hook" && event.source === "session" ? "hook" : event.source;
   tasks.set(event.id, {
     id: event.id,
     sessionId: event.sessionId,
-    state: event.state,
+    state,
     source,
-    updatedAt: event.at,
+    updatedAt: Math.max(current?.updatedAt || 0, event.at),
     workspace: event.workspace,
-    waitReason: event.state === "waiting" ? event.waitReason : void 0
+    waitReason: state === "waiting" ? waitReason : void 0,
+    pendingInputIds: pending.size ? [...pending] : void 0,
+    resolvedInputIds: resolved.size ? [...resolved].slice(-128) : void 0,
+    quotaPaused: quotaPaused || void 0
   });
 }
 function assistantNeedsInput(message) {
   if (typeof message !== "string") return false;
   const ending = message.trim().split(/\n\s*\n/).at(-1)?.slice(-400) || "";
-  return /(?:^|[。！？\n])\s*(?:请(?:你)?|需要你|等待你|麻烦你).{0,35}(?:确认|授权|批准|选择|补充|提供|回复)|(?:^|[.!?\n])\s*(?:please|i need you to|waiting for you to).{0,60}(?:confirm|approve|provide|choose|reply)/i.test(ending);
+  return /(?:你|您|请问|是否|能否|可否|哪|什么|多少|怎么|如何|would you|could you|can you|which|what|how|do you)[^。！!\n]*[?？][\s*”"')）]*$/i.test(ending) || /(?:^|[。！？\n])\s*(?:请(?:你)?|需要你|等待你|麻烦你).{0,35}(?:确认|授权|批准|选择|补充|提供|回复)|(?:^|[.!?\n])\s*(?:please|i need you to|waiting for you to).{0,60}(?:confirm|approve|provide|choose|reply)/i.test(ending);
 }
 function isBlockingInputTool(name) {
-  return /(?:^|[.:_])(?:request_user_input|ask_user|askuserquestion)$/i.test(name);
+  return /(?:^|[.:/_])(?:request_user_input(?:_async)?|ask_user|askuserquestion)$/i.test(name);
+}
+function isAsyncInputTool(name) {
+  return /(?:^|[.:/_])request_user_input_async$/i.test(name);
+}
+function inputRequestIds(name, callId, input) {
+  if (!isBlockingInputTool(name)) return [];
+  let value = input;
+  if (typeof value === "string") {
+    try {
+      value = JSON.parse(value);
+    } catch {
+      value = null;
+    }
+  }
+  const questions = value && typeof value === "object" ? value.questions : null;
+  const count = Array.isArray(questions) && questions.length ? questions.length : 1;
+  const id = typeof callId === "string" && callId ? callId : name.split(/[.:/]/).at(-1);
+  return Array.from({ length: count }, (_, index) => `${id}:${index}`);
+}
+function answeredInputIds(message) {
+  if (typeof message !== "string") return null;
+  const match = message.trim().match(/^<send_user_message_question_reply>\s*([\s\S]*?)\s*<\/send_user_message_question_reply>$/);
+  if (!match) return null;
+  try {
+    const replies = JSON.parse(match[1]);
+    if (!Array.isArray(replies)) return [];
+    return replies.flatMap((reply) => {
+      try {
+        const [name, callId, index] = JSON.parse(reply.questionItemId);
+        return typeof name === "string" && isBlockingInputTool(name) && typeof callId === "string" && Number.isInteger(index) && index >= 0 ? [`${callId}:${index}`] : [];
+      } catch {
+        return [];
+      }
+    });
+  } catch {
+    return [];
+  }
 }
 function isQuotaPause(error) {
   if (typeof error === "string") {
@@ -109,7 +184,7 @@ function hookTrafficEvent(name, payload, at = Date.now()) {
   const id = agentId ? sessionId + ":" + agentId : sessionId;
   const base = { id, sessionId, source: "hook", at, hookEvent: name, workspace: typeof payload.cwd === "string" ? payload.cwd.slice(0, 1024) : void 0 };
   if (name === "SessionEnd" || name === "Interrupt") return { ...base, endSession: true };
-  if (name === "SessionStart") return { ...base, state: "idle" };
+  if (name === "SessionStart") return { ...base, state: "idle", resetInputs: true };
   if (name === "PermissionRequest") return { ...base, state: "waiting", waitReason: "approval" };
   if (name === "PostModelRequest") {
     if (payload.status === "cancelled") return null;
@@ -121,7 +196,15 @@ function hookTrafficEvent(name, payload, at = Date.now()) {
     const needsInput = assistantNeedsInput(payload.last_assistant_message);
     return { ...base, state: needsInput ? "waiting" : "done", waitReason: needsInput ? "input" : void 0 };
   }
-  if (name === "PreToolUse" && isBlockingInputTool(String(payload.tool_name || ""))) return { ...base, state: "waiting", waitReason: "input" };
+  const tool = String(payload.tool_name || "");
+  const toolUseId = payload.tool_use_id || payload.call_id;
+  if (name === "PreToolUse" && isBlockingInputTool(tool)) return { ...base, state: "waiting", waitReason: "input", inputOpened: typeof toolUseId === "string" && toolUseId ? inputRequestIds(tool, toolUseId, payload.tool_input) : void 0 };
+  if (name === "PostToolUse" && isAsyncInputTool(tool)) return null;
+  if (name === "PostToolUse" && isBlockingInputTool(tool)) return { ...base, state: "working", inputResolved: typeof toolUseId === "string" ? [toolUseId] : inputRequestIds(tool, null, payload.tool_input) };
+  if (name === "UserPromptSubmit") {
+    const answered = answeredInputIds(payload.prompt);
+    return { ...base, state: "working", inputResolved: answered || void 0, resetInputs: answered === null };
+  }
   if (["UserPromptSubmit", "PreToolUse", "PostToolUse", "PreModelRequest", "SubagentStart"].includes(name)) return { ...base, state: "working" };
   return null;
 }

@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import {spawn} from 'node:child_process';
-import {aggregateTraffic,applyTrafficEvent,hookTrafficEvent,DONE_DURATION_MS} from '../src/common/codex-traffic.ts';
+import {aggregateTraffic,applyTrafficEvent,hookTrafficEvent,DONE_DURATION_MS,APPROVAL_GRACE_MS} from '../src/common/codex-traffic.ts';
 import {enqueueTraffic,readTrafficSnapshot,CodexTrafficService} from '../src/main/services/codex-traffic-store.ts';
 import {CodexHookInstaller,CODEX_HOOK_EVENTS} from '../src/main/services/codex-hook-install.ts';
 
@@ -28,9 +28,11 @@ test('permission and input hooks require attention, tool results resume, explici
  const tasks=new Map();
  const update=(event,payload={})=>applyTrafficEvent(tasks,hookTrafficEvent(event,{session_id:'one',...payload},Date.now()));
  update('UserPromptSubmit');assert.equal(aggregateTraffic(tasks.values()).state,'working');
- update('PermissionRequest');assert.equal(aggregateTraffic(tasks.values()).state,'waiting');
+ update('PermissionRequest');assert.equal(aggregateTraffic(tasks.values()).state,'working');
+ assert.equal(aggregateTraffic(tasks.values(),Date.now()+APPROVAL_GRACE_MS).state,'waiting');
  update('PostToolUse');assert.equal(aggregateTraffic(tasks.values()).state,'working');
  update('PreToolUse',{tool_name:'functions.request_user_input'});assert.equal(aggregateTraffic(tasks.values()).state,'waiting');
+ update('PostToolUse',{tool_name:'functions.request_user_input'});
  update('Stop',{last_assistant_message:'请提供对应文件后继续。'});assert.equal(aggregateTraffic(tasks.values()).state,'waiting');
  update('Stop',{last_assistant_message:'Please confirm the target directory.'});assert.equal(aggregateTraffic(tasks.values()).state,'waiting');
  update('Stop',{last_assistant_message:'Implementation completed.'});assert.equal(aggregateTraffic(tasks.values()).state,'done');
@@ -102,7 +104,10 @@ test('the Windows hook wrapper forwards stdin JSON and emits harmless hook outpu
   child.on('error',reject);child.on('exit',code=>code===0?resolve(text):reject(new Error(error)));
   child.stdin.end(JSON.stringify({session_id:'wrapper-task',cwd:'C:/项目'}));
  });
- assert.deepEqual(JSON.parse(output),{});assert.equal(readTrafficSnapshot(events).state,'waiting');
+ assert.deepEqual(JSON.parse(output),{});assert.equal(readTrafficSnapshot(events).state,'working');
+ const saved=JSON.parse(fs.readFileSync(path.join(events,'events',fs.readdirSync(path.join(events,'events'))[0]),'utf8'));
+ const tasks=new Map();applyTrafficEvent(tasks,saved);
+ assert.equal(aggregateTraffic(tasks.values(),saved.at+APPROVAL_GRACE_MS).state,'waiting');
 }));
 
 

@@ -1,4 +1,4 @@
-import { assistantNeedsInput, isBlockingInputTool, isQuotaPause } from '../../common/codex-traffic';
+import { answeredInputIds, assistantNeedsInput, inputRequestIds, isAsyncInputTool, isBlockingInputTool, isQuotaPause } from '../../common/codex-traffic';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
@@ -7,6 +7,8 @@ import type { SessionManager } from './session-manager';
 interface CodexContext {
   sessionId?: string;
   cwd?: string;
+  pendingInputs?: Set<string>;
+  inputCalls?: Map<string, {ids: string[]; async: boolean}>;
 }
 
 export class CodexSessionTailer {
@@ -239,14 +241,46 @@ export class CodexSessionTailer {
       }
 
       const sessionId = context.sessionId || 'codex-active';
-      const update = (patch: Parameters<SessionManager['updateSession']>[2]) =>
-        this.sessionManager.updateSession(sessionId, 'codex', {...patch, updatedAt: eventAt});
+      const pending: Set<string> = context.pendingInputs ||= new Set();
+      const inputCalls: NonNullable<CodexContext['inputCalls']> = context.inputCalls ||= new Map();
+      const update = (patch: Parameters<SessionManager['updateSession']>[2]) => {
+        const waiting = pending.size && patch.status !== 'idle';
+        return this.sessionManager.updateSession(sessionId, 'codex', {...patch,
+          ...(waiting ? {status:'waiting',trafficWaitReason:'input'} as const : {}),
+          pendingInputIds:[...pending],updatedAt:eventAt});
+      };
+      const openInput = (tool: string, id: unknown, input: unknown) => {
+        const ids = inputRequestIds(tool, id, input);
+        for (const inputId of ids) pending.add(inputId);
+        if (ids.length) inputCalls.set(typeof id === 'string' && id ? id : tool, {ids,async:isAsyncInputTool(tool)});
+      };
+      const resolveInput = (id: unknown, output: unknown): string[] => {
+        const call = typeof id === 'string' ? inputCalls.get(id) : undefined;
+        if (!call) return [];
+        let result = output;
+        if (typeof result === 'string') { try { result = JSON.parse(result); } catch { result = null; } }
+        if (call.async && result && typeof result === 'object' && (result as Record<string,unknown>).accepted === true && (result as Record<string,unknown>).isError !== true) return [];
+        for (const inputId of call.ids) pending.delete(inputId);
+        inputCalls.delete(String(id));
+        return call.ids;
+      };
+      const replyText = payload.type === 'user_message' ? payload.message : payload.type === 'message' && payload.role === 'user'
+        ? payload.content?.map((item: {text?:string}) => item.text || '').join('') : null;
+      const answered = answeredInputIds(replyText);
+      if (answered) {
+        for (const id of answered) pending.delete(id);
+        for (const [id,call] of inputCalls) if (!call.ids.some(inputId => pending.has(inputId))) inputCalls.delete(id);
+        update({status:'thinking',resolvedInputIds:answered,currentTool:null});
+        return;
+      }
 
       if (recordType === 'event_msg') {
         const payloadType = payload.type;
         if (payloadType === 'task_started') {
+          pending.clear(); inputCalls.clear();
           update({
             status: 'thinking',
+            clearPendingInputs:true,
             startedAt: eventAt,
             lastMessage: 'Task started',
           });
@@ -271,6 +305,7 @@ export class CodexSessionTailer {
           });
         } else if (payloadType === 'mcp_tool_call_begin') {
           const toolName = payload.tool_name || payload.name || 'mcp_tool';
+          openInput(toolName,payload.call_id || payload.tool_use_id,payload.arguments);
           update({
             status: isBlockingInputTool(toolName) ? 'waiting' : 'running_tool',
             trafficWaitReason: isBlockingInputTool(toolName) ? 'input' : undefined,
@@ -283,6 +318,7 @@ export class CodexSessionTailer {
         } else if (payloadType === 'mcp_tool_call_end') {
           update({
             status: 'thinking',
+            resolvedInputIds:resolveInput(payload.call_id || payload.tool_use_id || payload.tool_name || payload.name || this.sessionManager.getSession(sessionId)?.currentTool?.name,payload.result || payload.output),
             currentTool: null,
           });
         } else if (payloadType === 'task_complete' || payloadType === 'turn_complete') {
@@ -291,12 +327,13 @@ export class CodexSessionTailer {
           else if(assistantNeedsInput(message)) update({status:'waiting',trafficWaitReason:'input',currentTool:null});
           else update({status:'completed',currentTool:null,lastMessage:message});
         } else if (payloadType === 'turn_aborted') {
+          pending.clear(); inputCalls.clear();
           if(isQuotaPause(payload.error || payload.reason)) update({status:'waiting',trafficWaitReason:'quota',currentTool:null});
-          else update({status:'idle',currentTool:null});
+          else update({status:'idle',clearPendingInputs:true,currentTool:null});
         } else if (payloadType === 'error') {
           if(payload.willRetry === true || payload.will_retry === true) update({status:'thinking',currentTool:null});
           else if(isQuotaPause(payload)) update({status:'waiting',trafficWaitReason:'quota',error:payload.message || 'Codex usage limit reached',currentTool:null});
-          else update({status:'error',error:payload.message || 'Task failed or aborted',currentTool:null});
+          else update({status:'thinking',error:payload.message || 'Task request failed',currentTool:null});
         }
       } else if (recordType === 'response_item') {
         const payloadType = payload.type;
@@ -306,6 +343,7 @@ export class CodexSessionTailer {
           });
         } else if (payloadType === 'function_call' || payloadType === 'custom_tool_call') {
           const toolName = payload.name || 'tool';
+          openInput(toolName,payload.call_id,payload.arguments);
           let paramsSummary: string | undefined;
           if (payload.arguments) {
             paramsSummary = typeof payload.arguments === 'string'
@@ -324,6 +362,7 @@ export class CodexSessionTailer {
         } else if (payloadType === 'function_call_output' || payloadType === 'custom_tool_call_output') {
           update({
             status: 'thinking',
+            resolvedInputIds:resolveInput(payload.call_id || this.sessionManager.getSession(sessionId)?.currentTool?.name,payload.output),
             currentTool: null,
           });
         } else if (payloadType === 'message' && payload.role === 'assistant') {
