@@ -12,12 +12,8 @@
 
 安装配套电脑端 1.0.1 后，在“设置 → 关于 Nexo”点击“升级快应用”，或手动选择本页 RPK，覆盖安装构建 3。
 
-[GitHub 发布附件](https://github.com/sthess548/Nexo/releases/tag/v1.0.1)
-
 ## 1.0.0 · 构建 1
 
 首次发布手环横屏桌搭，包含前台常亮、时间与额度显示、任务状态灯、表情联动、双击切页和可关闭的震动提醒。
-
-[GitHub 发布附件](https://github.com/sthess548/Nexo/releases/tag/v1.0.0)
 
 [返回项目首页](../../README.md#版本更新)

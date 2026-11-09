@@ -8,12 +8,8 @@
 
 - 修复长命令误亮红灯。自动审批保持黄灯，审批方式未知时采用十秒兜底。
 
-[GitHub 发布附件](https://github.com/sthess548/Nexo/releases/tag/v1.0.1)
-
 ## 1.0.0
 
 首次发布电脑应用程序，包含额度与花费估算、Codex 任务状态联动、悬浮窗自定义、手环管理、开机自启动和覆盖升级。
-
-[GitHub 发布附件](https://github.com/sthess548/Nexo/releases/tag/v1.0.0)
 
 [返回项目首页](../../README.md#版本更新)
