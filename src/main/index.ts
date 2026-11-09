@@ -204,7 +204,7 @@ ipcMain.handle('nexo:set-band-vibration', (_event, enabled: unknown) => {
 });
 ipcMain.handle('nexo:open-codex', async () => {
   const result = await openCodexWindow();
-  if (!result.ok) void dialog.showMessageBox({ type: 'warning', title: '打开 Codex', message: result.error });
+  if (!result.ok) void dialog.showMessageBox({ type: 'warning', title: '打开 ChatGPT', message: result.error });
   return result;
 });
 ipcMain.handle('nexo:get-exchange-rate', () => statusServer.getExchangeRate());

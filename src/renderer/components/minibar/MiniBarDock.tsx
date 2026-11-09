@@ -80,7 +80,7 @@ export function MiniBarDock({ quotas, traffic, showStatusText = true, interactiv
         const cy = horizontal ? 65.667 : 65.667 + index * 117.333;
         const active = state === light.state;
         return <g key={light.state} className="nexo-traffic-lamp" data-lamp={light.state} data-lit={active}>
-          <circle cx={cx} cy={cy} r="43" strokeWidth="8" style={{ fill: active ? light.lit : palette.lamps[light.state].fill, stroke: active ? light.litRim : palette.lamps[light.state].stroke }} />
+          <circle cx={cx} cy={cy} r="43" strokeWidth="8" style={{ fill: light.lit, stroke: light.litRim, opacity: active ? 1 : 0.21 }} />
           <path d={highlights[light.state]} stroke={light.shine} strokeWidth="10" strokeLinecap="round" style={{ opacity: active ? 1 : 0 }} />
         </g>;
       })}
@@ -89,7 +89,7 @@ export function MiniBarDock({ quotas, traffic, showStatusText = true, interactiv
       <circle cx={ringX} cy={ringY} r="43" stroke={palette.ringTrack} strokeWidth="7" />
       {remaining !== null && <circle className="nexo-traffic-quota-arc" cx={ringX} cy={ringY} r="43" stroke={ringColor} strokeWidth="7" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={circumference * (1 - remaining / 100)} transform={`rotate(-90 ${ringX} ${ringY})`} />}
     </svg>
-    <QuotaControl type={interactive ? 'button' : undefined} className="nexo-floating-agent nexo-traffic-quota-button no-drag" aria-label={interactive ? `GPT ${taskLabel}，剩余额度 ${remaining === null ? '未知' : remaining + '%'}，悬停查看详情，双击打开 Codex` : undefined} aria-expanded={interactive ? selectedAgent === 'codex' : undefined} onClick={interactive ? () => onAgentClick?.('codex') : undefined}
+    <QuotaControl type={interactive ? 'button' : undefined} className="nexo-floating-agent nexo-traffic-quota-button no-drag" aria-label={interactive ? `GPT ${taskLabel}，剩余额度 ${remaining === null ? '未知' : remaining + '%'}，悬停查看详情，双击打开 ChatGPT` : undefined} aria-expanded={interactive ? selectedAgent === 'codex' : undefined} onClick={interactive ? () => onAgentClick?.('codex') : undefined}
       onDoubleClick={interactive ? event => { event.stopPropagation(); if (Math.hypot(event.screenX - pointerStart.current.x, event.screenY - pointerStart.current.y) <= 4) onAgentDoubleClick?.(); } : undefined}
       onMouseEnter={interactive ? () => onAgentEnter?.('codex') : undefined} onMouseLeave={interactive ? onAgentLeave : undefined}
       onFocus={interactive ? () => onAgentEnter?.('codex') : undefined} onBlur={interactive ? onAgentLeave : undefined}

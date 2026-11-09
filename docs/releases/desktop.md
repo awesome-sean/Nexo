@@ -1,8 +1,14 @@
 # 电脑应用程序发布页
 
-当前版本为 **v1.0.4**，适用于 Windows x64。
+当前版本为 **v1.0.5**，适用于 Windows x64。
 
-[下载 EXE v1.0.4](https://github.com/awesome-sean/Nexo/releases/download/v1.0.4/Nexo-Setup-1.0.4.exe) · [使用说明](../../README.md#使用说明) · [手环快应用发布页](band.md)
+[下载 EXE v1.0.5](https://github.com/awesome-sean/Nexo/releases/download/v1.0.5/Nexo-Setup-1.0.5.exe) · [使用说明](../../README.md#使用说明) · [手环快应用发布页](band.md)
+
+## v1.0.5
+
+修复双击 GPT 图标唤起 ChatGPT，优先激活已打开窗口。深浅外观未亮灯统一使用 21% 不透明度，亮灯保持完整亮度并保留渐变切换。
+
+[下载 Windows 安装包 v1.0.5](https://github.com/awesome-sean/Nexo/releases/download/v1.0.5/Nexo-Setup-1.0.5.exe)
 
 ## v1.0.4
 

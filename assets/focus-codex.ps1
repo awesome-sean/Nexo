@@ -43,26 +43,23 @@ public static class NexoCodexWindow {
 }
 '@
 
-function Get-CodexProcesses {
-    @(Get-Process -Name 'ChatGPT', 'Codex' -ErrorAction SilentlyContinue | Where-Object {
-        try {
-            $_.Path -match '[\\/]OpenAI\.Codex_[^\\/]+[\\/]' -or
-            $_.Path -match '[\\/]Programs[\\/]Codex[\\/]Codex\.exe$'
-        } catch { $false }
-    })
+function Get-ChatGPTProcesses {
+    @(Get-Process -Name 'ChatGPT' -ErrorAction SilentlyContinue)
 }
 
 try {
-    $processes = @(Get-CodexProcesses)
+    $processes = @(Get-ChatGPTProcesses)
     $window = [NexoCodexWindow]::Find([System.UInt32[]]@($processes | ForEach-Object { $_.Id }))
     if ($window -eq [IntPtr]::Zero) {
-        $startApp = Get-StartApps -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'Codex' } | Select-Object -First 1
+        $startApp = Get-StartApps -ErrorAction SilentlyContinue | Where-Object { $_.Name -in @('ChatGPT', 'Codex') } | Sort-Object @{ Expression = { if ($_.Name -eq 'ChatGPT') { 0 } else { 1 } } } | Select-Object -First 1
         if ($startApp -and $startApp.AppID -match '^[A-Za-z0-9._-]+![A-Za-z0-9._-]+$') {
             Start-Process -FilePath 'explorer.exe' -ArgumentList "shell:AppsFolder\$($startApp.AppID)" -WindowStyle Hidden
+        } elseif ($startApp -and [IO.Path]::IsPathRooted($startApp.AppID) -and $startApp.AppID.EndsWith('.exe') -and (Test-Path -LiteralPath $startApp.AppID)) {
+            Start-Process -FilePath $startApp.AppID -WindowStyle Hidden
         } elseif ($processes.Count -gt 0) {
-            Start-Process -FilePath $processes[0].Path -WindowStyle Normal
+            Start-Process -FilePath $processes[0].Path -WindowStyle Hidden
         } else {
-            throw '未找到 Codex 桌面应用，请先安装或打开 Codex。'
+            throw '未找到 ChatGPT 桌面应用，请先安装或打开 ChatGPT。'
         }
     }
 
@@ -72,10 +69,10 @@ try {
             exit 0
         }
         Start-Sleep -Milliseconds 200
-        $processes = @(Get-CodexProcesses)
+        $processes = @(Get-ChatGPTProcesses)
         $window = [NexoCodexWindow]::Find([System.UInt32[]]@($processes | ForEach-Object { $_.Id }))
     }
-    throw 'Codex 已打开，但 Windows 未能将窗口切到前台，请点击任务栏中的 Codex。'
+    throw 'ChatGPT 已打开，但 Windows 未能将窗口切到前台，请点击任务栏中的 ChatGPT。'
 } catch {
     @{ ok = $false; error = $_.Exception.Message } | ConvertTo-Json -Compress
     exit 1

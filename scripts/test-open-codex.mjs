@@ -44,9 +44,10 @@ test('launch failures and timeouts produce readable results without a rejected I
   assert.match((await timedOut).error,/超时/);
 });
 
-test('the helper identifies Codex packages before activating ChatGPT.exe processes', () => {
+test('the helper finds ChatGPT without requiring a Codex installation path', () => {
   const script=fs.readFileSync('assets/focus-codex.ps1','utf8');
-  assert.match(script,/OpenAI\\\.Codex_/);
+  assert.match(script,/Get-Process -Name 'ChatGPT'/);
+  assert.doesNotMatch(script,/\$_\.Path -match/);
   assert.match(script,/SetForegroundWindow/);
   assert.match(script,/IsIconic\(window\) \? 9 : 5/);
   assert.match(script,/Start-Process.*-WindowStyle Hidden/);
