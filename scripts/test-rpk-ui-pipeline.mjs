@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import bandManifest from '../band-app/src/manifest.json' with {type:'json'};
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
@@ -36,8 +37,8 @@ test('1. prepare-file 返回 metadata 且不暴露敏感字段', async () => {
   assert.strictEqual(res.chunkSize, 512);
   assert.strictEqual(res.totalChunks, Math.ceil(RPK_SIZE / 512));
   assert.strictEqual(res.packageId, 'com.codeisland.band');
-  assert.strictEqual(res.versionName, '1.2.6');
-  assert.strictEqual(res.versionCode, 34);
+  assert.strictEqual(res.versionName, bandManifest.versionName);
+  assert.strictEqual(res.versionCode, bandManifest.versionCode);
   assert.ok(res.installId.startsWith('inst_'));
 
   // 严格隔离：禁止向前端泄漏本地宿主路径或敏感字段

@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import bandManifest from '../band-app/src/manifest.json' with {type:'json'};
 import {
   AppInstallService,
   MIN_CHUNK_SIZE,
@@ -390,7 +391,7 @@ test('13. 内置包信息来自真实 manifest（不写死版本号）', () => {
   assert.equal(info.exists, true, '内置 assets/band-app.rpk 必须存在');
   assert.equal(info.manifestValid, true);
   assert.equal(info.packageId, 'com.codeisland.band');
-  assert.equal(info.versionCode, 34);
+  assert.equal(info.versionCode, bandManifest.versionCode);
   assert.ok(typeof info.versionName === 'string' && info.versionName.length > 0);
   assert.ok(info.fileSize > 0);
 

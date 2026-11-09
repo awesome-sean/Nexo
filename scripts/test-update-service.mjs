@@ -11,8 +11,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { parseRelease, downloadInstaller, fetchUpdateInfo, DesktopUpdateService, RELEASES_API } from '../src/main/services/update-service.ts';
 
-const DL = 'https://github.com/sthess548/Nexo/releases/download/v2.0.2/';
-const release = (assets) => ({ tag_name: 'v2.0.2', html_url: 'https://github.com/sthess548/Nexo/releases/tag/v2.0.2', assets });
+const DL = 'https://github.com/awesome-sean/Nexo/releases/download/v2.0.2/';
+const release = (assets) => ({ tag_name: 'v2.0.2', html_url: 'https://github.com/awesome-sean/Nexo/releases/tag/v2.0.2', assets });
 
 test('parseRelease: 找到安装包和校验文件，判断有新版本', () => {
   const info = parseRelease(
@@ -150,7 +150,7 @@ test('only stable releases from the configured repository are accepted', () => {
 
 test('an empty repository is distinguished from current-version and network errors', async () => {
   const info = await fetchUpdateInfo('0.4.12',async url => {
-    assert.equal(url,'https://api.github.com/repos/sthess548/Nexo/releases/latest');
+    assert.equal(url,'https://api.github.com/repos/awesome-sean/Nexo/releases/latest');
     return new Response('',{status:404});
   });
   assert.equal(info.unpublished,true);

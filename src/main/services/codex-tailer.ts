@@ -1,4 +1,4 @@
-import { answeredInputIds, assistantNeedsInput, inputRequestIds, isAsyncInputTool, isBlockingInputTool, isQuotaPause } from '../../common/codex-traffic';
+import { answeredInputIds, assistantNeedsInput, inputRequestIds, isAsyncInputTool, isBlockingInputTool, isQuotaPause } from '../../common/codex-traffic.ts';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
@@ -176,7 +176,7 @@ export class CodexSessionTailer {
         fs.closeSync(fd);
       }
 
-      // 只处理到最后一个换行为止（理由同 claude-desktop-tailer.readNewLines）：
+      // 只处理到最后一个换行为止：
       // 把位置推到 stat.size 会把尾部那半行永久丢掉，多字节字符还可能被切坏。
       const lastNewline = buffer.lastIndexOf(0x0a);
       if (lastNewline < 0) return;

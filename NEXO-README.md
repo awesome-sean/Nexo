@@ -107,7 +107,7 @@ CLI、Hooks 和桌面程序默认共用 %LOCALAPPDATA%/Nexo/traffic；状态事�
 
 ## 应用内覆盖升级
 
-在「设置 → 关于 Nexo」检查更新。电脑端从 [sthess548/Nexo 的正式 Releases](https://github.com/sthess548/Nexo/releases) 读取版本，点击「下载并安装」后，更新卡片显示下载及 SHA256 校验进度。校验通过后直接打开 Windows 安装向导，按提示完成安装，并在完成页选择运行 Nexo。下载失败时可选择「浏览器下载」。已有设置与手环绑定保存在用户数据目录。
+在「设置 → 关于 Nexo」检查更新。电脑端从 [awesome-sean/Nexo 的正式 Releases](https://github.com/awesome-sean/Nexo/releases) 读取版本，点击「下载并安装」后，更新卡片显示下载及 SHA256 校验进度。校验通过后直接打开 Windows 安装向导，按提示完成安装，并在完成页选择运行 Nexo。下载失败时可选择「浏览器下载」。已有设置与手环绑定保存在用户数据目录。
 
 升级电脑端后，保持手环蓝牙连接，在同一页点击「升级快应用」。Nexo 比较手环已安装构建版本与内置 RPK，仅对未安装或较旧版本开放安装按钮，手环确认安装并读取到目标版本后显示完成。独立发布的 RPK 可供手动安装，应用内升级使用桌面安装包随附的 RPK。
 

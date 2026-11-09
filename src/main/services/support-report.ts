@@ -1,4 +1,4 @@
-import { userFacingError } from '../../common/user-facing-error';
+import { userFacingError } from '../../common/user-facing-error.ts';
 import type { DiagnosticReport } from './diagnostics';
 import type { PulseErrorEntry } from './error-log';
 

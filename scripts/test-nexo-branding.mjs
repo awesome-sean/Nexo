@@ -13,7 +13,6 @@ test('Nexo user-facing views, reports and guides use the current brand', () => {
     'src/main/services/support-report.ts',
     'README.md',
     'NEXO-README.md',
-    'BAND9-README.md',
   ];
   for (const file of files) {
     const text = fs.readFileSync(new URL('../' + file, import.meta.url), 'utf8');

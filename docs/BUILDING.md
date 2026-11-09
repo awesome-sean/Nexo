@@ -53,7 +53,7 @@ npm run dist -- --win --x64
 
 ## GitHub 覆盖升级发布
 
-更新源固定为 sthess548/Nexo 的正式最新 Release。先整理已有构建。
+更新源固定为 awesome-sean/Nexo 的正式最新 Release。先整理已有构建。
 
 ```powershell
 node scripts/prepare-github-release.mjs release

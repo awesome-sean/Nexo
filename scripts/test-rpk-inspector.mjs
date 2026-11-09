@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import bandManifest from '../band-app/src/manifest.json' with {type:'json'};
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -134,8 +135,8 @@ test('5. 合法ZIP+manifest解析成功', () => {
     const realMeta = inspectRpk(realRpkPath);
     assert.equal(realMeta.manifestValid, true);
     assert.equal(realMeta.packageId, 'com.codeisland.band');
-    assert.equal(realMeta.versionName, '1.2.6');
-    assert.equal(realMeta.versionCode, 34);
+    assert.equal(realMeta.versionName, bandManifest.versionName);
+    assert.equal(realMeta.versionCode, bandManifest.versionCode);
     assert.equal(realMeta.fileSize, fs.statSync(realRpkPath).size);
   }
 });

@@ -11,20 +11,20 @@
   <a href="#使用说明">使用说明</a> ·
   <a href="#版本更新">版本更新</a> ·
   <a href="docs/BUILDING.md">源码构建</a> ·
-  <a href="https://github.com/sthess548/Nexo/issues">反馈问题</a>
+  <a href="https://github.com/awesome-sean/Nexo/issues">反馈问题</a>
 </p>
 
 - **Windows 桌面悬浮窗**。下载并安装电脑端 EXE 即可使用。<br>
-  最新 EXE 下载地址　[https://github.com/sthess548/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe](https://github.com/sthess548/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe)
+  最新 EXE 下载地址　[https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe)
 - **小米手环横屏桌搭**。需要电脑端 EXE 和手环 RPK，连接后联动使用。<br>
-  最新 RPK 下载地址　[https://github.com/sthess548/Nexo/releases/download/v1.0.1/Nexo-Band-1.0.1.rpk](https://github.com/sthess548/Nexo/releases/download/v1.0.1/Nexo-Band-1.0.1.rpk)
+  最新 RPK 下载地址　[https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Band-1.0.1.rpk](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Band-1.0.1.rpk)
 
 ## 版本更新
 
 | 应用 | 当前版本 | 发布页 |
 | --- | --- | --- |
 | 电脑应用程序 · Windows | **1.0.1** | [电脑应用程序发布页](docs/releases/desktop.md) |
-| 手环快应用 · 小米手环 | **1.0.1** · 构建 3 | [手环快应用发布页](docs/releases/band.md) |
+| 手环快应用 · 小米手环 | **1.0.1** · 构建 2 | [手环快应用发布页](docs/releases/band.md) |
 
 ## 主要功能
 
@@ -74,7 +74,7 @@
 
 ### 1. 安装与连接手环
 
-1. 下载并运行 [Nexo-Setup-1.0.1.exe](https://github.com/sthess548/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe)，在电脑上登录 Codex。
+1. 下载并运行 [Nexo-Setup-1.0.1.exe](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe)，在电脑上登录 Codex。
 2. 手环先通过小米运动健康完成账号绑定，电脑开启蓝牙。
 3. 在 Nexo「手环桌搭」点击「连接手环」，按向导导入设备资料。
    - **AstroBox 导入**。电脑版 AstroBox 登录同一小米账号并同步手环，回到 Nexo 点击读取，授权后选择设备导入。
@@ -126,7 +126,7 @@
 
 在「设置 → 关于 Nexo」检查更新。点击「下载并安装」后，更新卡片显示下载与校验进度。校验通过后直接打开 Windows 安装向导，按提示完成安装，在完成页选择运行 Nexo。下载失败可点击「浏览器下载」。绑定与个人设置保存在本机。
 
-升级电脑端后，保持手环连接，在同一页点击「升级快应用」，覆盖安装手环 1.0.1（构建 3）。也可手动选择下载的 RPK 安装。已安装此前 1.0.1 EXE 的用户，请重新下载本页 EXE 覆盖安装。
+升级电脑端后，保持手环连接，在同一页点击「升级快应用」，覆盖安装手环 1.0.1（构建 2）。也可手动选择下载的 RPK 安装。已安装此前 1.0.1 EXE 的用户，请重新下载本页 EXE 覆盖安装。 已安装构建 3 的手环，请先卸载旧快应用，再安装构建 2。
 
 ### 7. 连接异常怎么办
 

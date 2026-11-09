@@ -13,7 +13,6 @@ import {
   resolveDaemonArgs,
   shouldRetryLiveConnect,
 } from '../src/main/services/pulse-core-policy.ts';
-import { nextIdleGrace } from '../src/main/services/antigravity-policy.ts';
 import {
   formatDiagnosticReport,
   formatErrorLog,
@@ -63,15 +62,6 @@ test('late connect replies cannot restore connection intent after manual disconn
   client.dispose();
 });
 
-test('completion grace widens to the longest gap actually seen', () => {
-  // 实测：Antigravity 挂计时器等待时步间空档能到 14s / 19s / 27s，固定 4s 宽限会反复误报完成
-  assert.equal(nextIdleGrace(4_000, 1_000), 4_000); // 短空档不动
-  assert.equal(nextIdleGrace(4_000, 14_000), 16_000); // 空档 + 2s 余量
-  assert.equal(nextIdleGrace(16_000, 12_000), 16_000); // 更短的空档不会把宽限调回去
-  assert.equal(nextIdleGrace(16_000, 27_000), 29_000);
-  assert.equal(nextIdleGrace(4_000, 120_000), 40_000); // 封顶
-});
-
 test('a failed connection stays retryable', () => {
   assert.equal(canConnectBand('disconnected', false), true);
   // 回归：连接失败后状态是 error，按钮曾经被永久置灰，没有任何重试入口
@@ -102,7 +92,7 @@ test('diagnostic report is readable and redacts every field', () => {
       },
     ],
   });
-  assert.match(output, /Pulse Core 后台/);
+  assert.match(output, /Nexo Core 后台/);
   assert.match(output, /下一步/);
   assert.doesNotMatch(output, /private-value|ASUS/);
 });
