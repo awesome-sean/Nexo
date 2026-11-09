@@ -18,7 +18,7 @@
 
 ## v1.0.1
 
-修复长命令误亮红灯。自动审批保持黄灯，审批方式未知时采用十秒兜底。
+修复长命令误亮红灯。自动审批保持黄灯，审批方式未知时审核时长大于十秒亮红灯。
 
 [下载 Windows 安装包 v1.0.1](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe)
 
