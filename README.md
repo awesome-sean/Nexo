@@ -163,4 +163,4 @@ Electron、React、TypeScript、Rust 与 Xiaomi Vela。构建步骤见 [构建�
 
 代码采用 [MIT License](LICENSE)。字体、标识、设备图片和表情素材的来源与授权范围见 [素材说明](NOTICE.md) 和 [第三方许可](assets/THIRD-PARTY-LICENSES.txt)。
 
-如果 Nexo 对你有帮助，欢迎在程序「设置 → 打赏作者」中支持持续维护，也欢迎提交问题与改进建议。
+如果 Nexo 对你有帮助，欢迎点击 GitHub 页面右上角的 ⭐ Star，或提交问题与改进建议。也可以在程序「设置 → 打赏作者」中请我喝一杯，支持持续维护与更新。每一份支持都很重要。
