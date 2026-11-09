@@ -6,7 +6,7 @@
 
 ## v1.0.5
 
-修复双击 GPT 图标唤起 ChatGPT，优先激活已打开窗口。深浅外观未亮灯统一使用 21% 不透明度，亮灯保持完整亮度并保留渐变切换。
+修复深浅外观未亮灯的不透明度显示。
 
 [下载 Windows 安装包 v1.0.5](https://github.com/awesome-sean/Nexo/releases/download/v1.0.5/Nexo-Setup-1.0.5.exe)
 
