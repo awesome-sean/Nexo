@@ -86,7 +86,7 @@
 
 #### 开启任务状态联动
 
-- 在「手环桌搭」找到「GPT · Codex Hooks」，点击「配置 Hooks」。此配置也用于桌面悬浮窗，可在连接手环前完成。
+- 在「手环桌搭」找到「GPT · Codex Hooks」，点击「配置 Hooks」。此配置也用于手环桌搭。
 - 在 Codex 中审核并信任 Nexo 状态灯命令。Codex CLI 可运行 `/hooks`，桌面端按 Hooks 审核提示操作。
 - 重新开始会话，并保持 Nexo 在后台运行。
 
@@ -106,7 +106,7 @@
 
 ### 小米手环桌搭
 
-需要安装 [电脑端 EXE 1.0.1](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe) 和 [手环 RPK 1.0.1](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Band-1.0.1.rpk)，通过电脑蓝牙连接手环，并保持 Nexo 在后台运行。
+需要安装 [电脑端 EXE 1.0.1](://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe) 和 [手环 RPK 1.0.1](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Band-1.0.1.rpk)，通过电脑蓝牙连接手环，并保持 Nexo 在后台运行。
 
 #### 安装与连接
 
@@ -121,7 +121,7 @@
 
 #### 任务状态、表情与手势
 
-完成上方 Codex Hooks 配置后，电脑悬浮窗与手环会同步显示任务状态。例如，执行代码任务时亮黄灯，等待你回答时亮红灯并自动显示生气表情，回答后继续执行会恢复黄灯与时间页，完成时亮绿灯并显示星星眼。
+- 在「手环桌搭」找到「GPT · Codex Hooks」，点击「配置 Hooks」。
 
 | 操作或状态 | 手环表现 |
 | --- | --- |
@@ -163,4 +163,4 @@ Electron、React、TypeScript、Rust 与 Xiaomi Vela。构建步骤见 [构建�
 
 代码采用 [MIT License](LICENSE)。字体、标识、设备图片和表情素材的来源与授权范围见 [素材说明](NOTICE.md) 和 [第三方许可](assets/THIRD-PARTY-LICENSES.txt)。
 
-如果 Nexo 对你有帮助，欢迎点击 GitHub 页面右上角的 ⭐ Star，或提交问题与改进建议。也可以在程序「设置 → 打赏作者」中请我喝一杯，支持持续维护与更新。每一份支持都很重要。
+如果 Nexo 对你有帮助，欢迎点击 GitHub 页面右上角的 ⭐ Star，或提交问题与改进建议。也可以在程序「设置 → 打赏作者」，支持持续维护与更新。每一份支持都很重要。
