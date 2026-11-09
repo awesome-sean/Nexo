@@ -6,7 +6,7 @@
 
 ## v1.0.3
 
-修复连接手环问题
+修复连接手环问题。
 
 [下载 Windows 安装包 v1.0.3](https://github.com/awesome-sean/Nexo/releases/download/v1.0.3/Nexo-Setup-1.0.3.exe)
 
