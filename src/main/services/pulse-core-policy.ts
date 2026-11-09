@@ -1,7 +1,8 @@
 export type BandConnectionReason = 'startup' | 'reconnect' | 'poll' | 'diagnostics' | 'manual-connect';
 
-export function shouldConnectBand(reason: BandConnectionReason): boolean {
-  return reason === 'manual-connect' || reason === 'startup' || reason === 'reconnect';
+/** 每次启动由用户首次连接，之后仅在本次运行中恢复该连接。 */
+export function shouldConnectBand(reason: BandConnectionReason, connectionRequested = false): boolean {
+  return reason === 'manual-connect' || (reason === 'reconnect' && connectionRequested);
 }
 
 export type BandConnectionState = 'connected' | 'connecting' | 'disconnected' | 'error';

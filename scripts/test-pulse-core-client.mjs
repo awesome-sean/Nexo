@@ -41,9 +41,11 @@ test('Nexo stores its endpoint and credentials in a separate data directory', ()
   assert.equal(getDeviceConfigFile(), path.join(root, 'Nexo', 'PulseDev', 'run', 'device.json'));
 });
 
-test('startup and recovery may connect the configured band while polling and diagnostics stay passive', () => {
-  assert.equal(shouldConnectBand('startup'), true);
-  assert.equal(shouldConnectBand('reconnect'), true);
+test('startup stays passive and recovery requires a manual connection in this run', () => {
+  assert.equal(shouldConnectBand('startup'), false);
+  assert.equal(shouldConnectBand('startup', true), false);
+  assert.equal(shouldConnectBand('reconnect'), false);
+  assert.equal(shouldConnectBand('reconnect', true), true);
   assert.equal(shouldConnectBand('poll'), false);
   assert.equal(shouldConnectBand('diagnostics'), false);
   assert.equal(shouldConnectBand('manual-connect'), true);

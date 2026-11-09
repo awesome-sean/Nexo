@@ -206,13 +206,6 @@ export class PulseCoreBridge {
     return this.ready;
   }
 
-  startAutoConnect(): void {
-    const config = deviceConfigService.getDeviceConfigStatus();
-    if (this.detached || !config.exists || !config.valid) return;
-    this.autoConnect = true;
-    void this.connectBand('startup');
-  }
-
   private stopAutoConnect(): void {
     this.autoConnect = false;
     this.connectionGeneration++;
@@ -239,7 +232,7 @@ export class PulseCoreBridge {
   }
 
   private connectBand(reason: BandConnectionReason): Promise<{ ok: boolean; error?: string; device?: unknown }> {
-    if (this.detached || !shouldConnectBand(reason)) return Promise.resolve({ ok: false, error: '当前无法连接手环' });
+    if (this.detached || !shouldConnectBand(reason, this.autoConnect)) return Promise.resolve({ ok: false, error: '当前无法连接手环' });
     if (reason === 'manual-connect') {
       this.autoConnect = true;
       this.retryAttempt = 0;

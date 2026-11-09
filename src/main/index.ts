@@ -333,7 +333,6 @@ app.whenReady().then(async () => {
   traffic.start();
   codexTailer.start();
   traffic.trackSessions(sessionManager.getAllSessions());
-  coreBridge.startAutoConnect();
 });
 
 /**

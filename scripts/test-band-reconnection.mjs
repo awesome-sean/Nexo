@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
+import fs from 'node:fs';
+import { shouldConnectBand } from '../src/main/services/pulse-core-policy.ts';
 import { createRequire } from 'node:module';
 import { EventEmitter } from 'node:events';
 import { buildSync } from 'esbuild';
@@ -39,7 +41,7 @@ function fixture() {
       if(name==='electron') return {ipcMain:{handle:(name,callback)=>ipc.set(name,callback)}};
       if(name==='./device-config-service') return {deviceConfigService:{getDeviceConfigStatus:()=>({exists:valid,valid})}};
       if(name==='./fetch-bridge-direct') return {BAND_PACKAGE:'com.codeisland.band',DirectFetchBridge:class {running=false;start(){this.running=true;}stop(){this.running=false;}}};
-      if(name==='./pulse-core-policy') return {shouldConnectBand:reason=>['startup','reconnect','manual-connect'].includes(reason)};
+      if(name==='./pulse-core-policy') return {shouldConnectBand};
       if(name==='./error-log') return {pushError(){},onErrorLog(){}};
       if(name.startsWith('./')) return {};
       return require(name);
@@ -53,18 +55,39 @@ function fixture() {
   };
 }
 
-test('startup requires valid configuration and shares one connect attempt with manual requests', async () => {
-  const f=fixture();
-  f.setValid(false);f.bridge.startAutoConnect();await flush();assert.equal(f.client.starts,0);
-  f.setValid(true);f.bridge.startAutoConnect();await f.invoke('pulse:band:connect');
-  assert.equal(f.client.starts,1);assert.equal(f.client.calls.filter(method=>method==='device.connect').length,1);
-  await f.poll();assert.equal(f.timeouts.size,0);
-  assert.equal(f.invoke('pulse:core:get-state').connection.state,'connecting');
+test('launch with saved configuration stays disconnected until the user connects', async () => {
+  const f = fixture();
+  await flush();
+  assert.equal(f.client.starts, 0);
+  assert.equal(f.client.calls.length, 0);
+  assert.equal(f.timeouts.size, 0);
+  assert.equal(f.invoke('pulse:core:get-state').connection.state, 'disconnected');
+  const denied = await f.bridge.connectBand('reconnect');
+  assert.equal(denied.ok, false);
+  f.client.emit('device.state', {state: {protocolState: 'error'}});
+  assert.equal(f.timeouts.size, 0);
+  assert.equal(f.client.starts, 0);
+  assert.doesNotMatch(fs.readFileSync('src/main/index.ts', 'utf8'), /coreBridge\.startAutoConnect\(/);
+  f.bridge.detach();
+});
+
+test('manual requests require valid configuration and share one connect attempt', async () => {
+  const f = fixture();
+  f.setValid(false);
+  assert.equal((await f.invoke('pulse:band:connect')).ok, false);
+  assert.equal(f.client.starts, 0);
+  f.setValid(true);
+  await Promise.all([f.invoke('pulse:band:connect'), f.invoke('pulse:band:connect')]);
+  assert.equal(f.client.starts, 1);
+  assert.equal(f.client.calls.filter(method => method === 'device.connect').length, 1);
+  await f.poll();
+  assert.equal(f.timeouts.size, 0);
+  assert.equal(f.invoke('pulse:core:get-state').connection.state, 'connecting');
   f.bridge.detach();
 });
 
 test('failed Bluetooth connection recovers with backoff and manual disconnect cancels retries', async () => {
-  const f=fixture();f.bridge.startAutoConnect();await flush();
+  const f=fixture();await f.invoke('pulse:band:connect');await flush();
   f.client.status={connected:false,protocolState:'error'};
   f.client.emit('device.state',{state:{protocolState:'error'}});
   assert.equal(await f.runRetry(),5000);
@@ -79,7 +102,7 @@ test('failed Bluetooth connection recovers with backoff and manual disconnect ca
 });
 
 test('daemon startup failures retry up to a sixty-second interval and detach cancels recovery', async () => {
-  const f=fixture();f.setStartFailure(true);f.bridge.startAutoConnect();await flush();
+  const f=fixture();f.setStartFailure(true);await f.invoke('pulse:band:connect');await flush();
   const delays=[];
   for(let i=0;i<6;i++) delays.push(await f.runRetry());
   assert.deepEqual(delays,[5000,10000,20000,40000,60000,60000]);
@@ -88,7 +111,7 @@ test('daemon startup failures retry up to a sixty-second interval and detach can
 
 test('quitting during daemon startup prevents late connection and polling', async () => {
   const f=fixture();let release;f.setStartGate(new Promise(resolve=>{release=resolve;}));
-  f.bridge.startAutoConnect();f.bridge.detach();release();await flush();
+  const pending = f.invoke('pulse:band:connect');f.bridge.detach();release();await pending;await flush();
   assert.equal(f.client.calls.filter(method=>method==='device.connect').length,0);
   assert.equal(f.intervals.size,0);assert.equal(f.timeouts.size,0);
 });
