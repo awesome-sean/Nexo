@@ -72,7 +72,7 @@ export const InstallAppStep: React.FC<InstallAppStepProps> = ({ onSuccess }) => 
         setState('done');
         setMessage({
           ok: true,
-          text: `设备已确认 Nexo 快应用安装完成（构建 ${res.versionCode ?? '?'}）`,
+          text: '设备已确认 Nexo 快应用安装完成',
         });
         onSuccess?.();
       } else {

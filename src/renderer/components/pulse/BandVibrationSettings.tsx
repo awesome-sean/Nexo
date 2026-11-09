@@ -12,7 +12,7 @@ export function BandVibrationSettings() {
     let active = true;
     window.pulse?.getBandSettings().then(value => {
       if (active) setSettings(value);
-    }).catch(() => { if (active) setError('读取手环震动设置失败'); });
+    }).catch(() => { if (active) setError('读取手环振动设置失败'); });
     return () => { active = false; };
   }, []);
 
@@ -27,10 +27,10 @@ export function BandVibrationSettings() {
 
   return <div className="workspace-vibration-setting">
     <div className="workspace-vibration-row">
-      <div><h4><Vibrate size={20} />手环震动</h4><p>通过蓝牙同步，断连后在下次连接时应用。</p></div>
+      <div><h4><Vibrate size={20} />手环振动</h4><p>通过蓝牙同步，断连后在下次连接时应用。</p></div>
       <div className="workspace-vibration-control">
         <span>{settings ? settings.vibrationEnabled ? '已开启' : '无振动' : '读取中…'}</span>
-        <Toggle label="手环震动" checked={settings?.vibrationEnabled ?? true} disabled={busy || !settings} onChange={value => void change(value)} />
+        <Toggle label="手环振动" checked={settings?.vibrationEnabled ?? true} disabled={busy || !settings} onChange={value => void change(value)} />
       </div>
     </div>
     {error && <p className="auto-launch-error" role="alert">{error}</p>}

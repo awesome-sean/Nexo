@@ -3,6 +3,7 @@ import { Package, RefreshCw, Trash2 } from 'lucide-react';
 import { useBandConnection } from '../../hooks/useBandConnection';
 import { OtherAppInstall } from './OtherAppInstall';
 
+const nexoVersions: Record<number, string> = {1: 'v1.0.0', 2: 'v1.0.1', 3: 'v1.0.2'};
 type QuickApp = { package_name: string; app_name?: string; version_code: number; can_remove: boolean };
 export const QuickAppPage: React.FC<{ embedded?: boolean }> = ({ embedded = false }) => {
   const connection = useBandConnection();
@@ -36,7 +37,7 @@ export const QuickAppPage: React.FC<{ embedded?: boolean }> = ({ embedded = fals
       </div>
       {!connected ? <p>连接手环后查看应用</p> : !busy && apps.length === 0 ? <p>暂无快应用</p> : null}
       <div className="grid gap-4 grid-cols-1 xl:grid-cols-2">{connected && apps.map(app => <div key={app.package_name} className="flex items-center gap-4 rounded-[20px] p-5 bg-[var(--bg-subtle)]">
-        <Package size={28} className="shrink-0" /><div className="min-w-0 flex-1"><h4 className="font-semibold truncate">{app.app_name || app.package_name}</h4><p className="text-sm text-[var(--text-muted)] break-all">{app.package_name}</p><p className="text-sm mt-1">版本 {app.version_code}</p></div>
+        <Package size={28} className="shrink-0" /><div className="min-w-0 flex-1"><h4 className="font-semibold truncate">{app.app_name || app.package_name}</h4><p className="text-sm text-[var(--text-muted)] break-all">{app.package_name}</p><p className="text-sm mt-1">{app.package_name === 'com.codeisland.band' ? (nexoVersions[app.version_code] || '版本信息待更新') : `版本 ${app.version_code}`}</p></div>
         <button className="nexo-action shrink-0" disabled={busy || !connected || !app.can_remove} onClick={() => setRemoving(app)} title={app.can_remove ? '卸载' : '设备不允许卸载'}><Trash2 size={16} />卸载</button>
       </div>)}</div>
     </section>

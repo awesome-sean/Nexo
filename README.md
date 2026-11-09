@@ -17,14 +17,14 @@
 - **Windows 桌面悬浮窗**。下载并安装电脑端 EXE 即可使用。<br>
   最新 EXE 下载地址　[https://github.com/awesome-sean/Nexo/releases/download/v1.0.4/Nexo-Setup-1.0.4.exe](https://github.com/awesome-sean/Nexo/releases/download/v1.0.4/Nexo-Setup-1.0.4.exe)
 - **小米手环横屏桌搭**。需要电脑端 EXE 和手环 RPK，连接后联动使用。<br>
-  最新 RPK 下载地址　[https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Band-1.0.1.rpk](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Band-1.0.1.rpk)
+  最新 RPK 下载地址　[https://github.com/awesome-sean/Nexo/releases/download/v1.0.2/Nexo-Band-1.0.2.rpk](https://github.com/awesome-sean/Nexo/releases/download/v1.0.2/Nexo-Band-1.0.2.rpk)
 
 ## 版本更新
 
 | 应用 | 当前版本 | 发布页 |
 | --- | --- | --- |
 | 电脑应用程序 · Windows | **v1.0.4** | [电脑应用程序发布页](docs/releases/desktop.md) |
-| 手环快应用 · 小米手环 | **v1.0.1** · 构建 2 | [手环快应用发布页](docs/releases/band.md) |
+| 手环快应用 · 小米手环 | **v1.0.2** | [手环快应用发布页](docs/releases/band.md) |
 
 ## 主要功能
 
@@ -47,16 +47,16 @@
 - **常亮横屏**。快应用前台运行时屏幕常亮，显示时间、日期、额度、重置时间与当天花费。
 - **任务状态灯**。时间页左侧显示，执行中黄灯、等待处理红灯、最近完成绿灯，空闲熄灯。
 - **表情联动**。工作显示 wink，等待显示生气，完成显示星星眼，空闲显示睡觉。双击切换时间页与表情页。
-- **震动提醒**。等待处理与任务完成时提醒，可通过电脑端「手环震动」开关选择开启或关闭。
+- **振动提醒**。等待处理与任务完成时提醒，可通过电脑端「手环振动」开关选择开启或关闭。
 
 ## 任务状态一眼看懂
 
 | 灯色 | 什么时候亮 | 手环提醒 |
 | --- | --- | --- |
-| 🔴 等待处理 | Codex 提问、等待审核，或额度不足暂停 | 自动显示 生气，短震＋长震重复六组 |
-| 🟡 正在执行 | Codex 正在工作，收到对应回答后继续执行 | wink，无震动 |
-| 🟢 最近完成 | 任务完成，保留 10 分钟 | 自动显示 星星眼，连续四次长震 |
-| 熄灯 | 当前空闲 | 睡觉，无震动 |
+| 🔴 等待处理 | Codex 提问、等待审核，或额度不足暂停 | 自动显示 生气，短振＋长振重复六组 |
+| 🟡 正在执行 | Codex 正在工作，收到对应回答后继续执行 | wink，无振动 |
+| 🟢 最近完成 | 任务完成，保留 10 分钟 | 自动显示 星星眼，连续四次长振 |
+| 熄灯 | 当前空闲 | 睡觉，无振动 |
 
 提问后保持红灯，收到对应回答才恢复黄灯。多个任务优先显示待处理的红灯，其次为执行中的黄灯。只要还有任务执行就保持黄灯，全部完成后亮绿灯，完成提示保留十分钟。
 
@@ -97,7 +97,7 @@
 
 ### 小米手环桌搭
 
-需要安装 [电脑端 EXE v1.0.4](https://github.com/awesome-sean/Nexo/releases/download/v1.0.4/Nexo-Setup-1.0.4.exe) 和 [手环 RPK v1.0.1](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Band-1.0.1.rpk)，通过电脑蓝牙连接手环，并保持 Nexo 在后台运行。
+需要安装 [电脑端 EXE v1.0.4](https://github.com/awesome-sean/Nexo/releases/download/v1.0.4/Nexo-Setup-1.0.4.exe) 和 [手环 RPK v1.0.2](https://github.com/awesome-sean/Nexo/releases/download/v1.0.2/Nexo-Band-1.0.2.rpk)，通过电脑蓝牙连接手环，并保持 Nexo 在后台运行。
 
 #### 安装与连接
 
@@ -126,11 +126,11 @@
 | 当前空闲 | 睡觉，可双击时间页查看 |
 | 连续右滑两次 | 退出快应用 |
 
-#### 震动提醒
+#### 振动提醒
 
-红灯提醒为六组「短震＋长震」，共十二下。绿灯提醒为连续四次长震，黄灯与空闲状态无震动。单次震动时长由手环固件决定。
+红灯提醒为六组「短振＋长振」，共十二下。绿灯提醒为连续四次长振，黄灯与空闲状态无振动。单次振动时长由手环固件决定。
 
-在「手环桌搭 → GPT · Codex Hooks」调整「手环震动」开关，关闭后为无振动。设置自动保存，通过蓝牙同步，断连后在下次连接时应用。此开关需要电脑端与快应用均使用配套版本。
+在「手环桌搭 → GPT · Codex Hooks」调整「手环振动」开关，关闭后为无振动。设置自动保存，通过蓝牙同步，断连后在下次连接时应用。此开关需要电脑端与快应用均使用配套版本。
 
 #### 连接异常
 

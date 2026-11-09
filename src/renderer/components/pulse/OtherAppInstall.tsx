@@ -179,7 +179,6 @@ export const OtherAppInstall: React.FC<OtherAppInstallProps> = ({ connected, onI
           <div className="text-xs space-y-1 text-[var(--text-secondary)] font-mono">
             <div>包名称: {prepared.packageId ?? '未解析'}</div>
             <div>版本: {prepared.versionName ?? '未解析'}</div>
-            <div>versionCode: {prepared.versionCode ?? '未解析'}</div>
             <div>大小: {(prepared.fileSize / 1024).toFixed(1)} KB</div>
             <div>分块: {prepared.totalChunks}</div>
           </div>

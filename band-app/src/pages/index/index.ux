@@ -679,7 +679,7 @@ export default {
     try {
       vibrator.vibrate({ mode: mode });
     } catch (error) {
-      console.warn('[Nexo] 震动提示暂不可用');
+      console.warn('[Nexo] 振动提示暂不可用');
     }
   },
   cancelVibrationSequence() {

@@ -6,7 +6,7 @@
 
 ## v1.0.4
 
-优化后台内存占用。
+优化后台内存占用。修复悬浮窗灰底，统一“振动”用词，随附手环快应用 v1.0.2。
 
 [下载 Windows 安装包 v1.0.4](https://github.com/awesome-sean/Nexo/releases/download/v1.0.4/Nexo-Setup-1.0.4.exe)
 

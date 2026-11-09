@@ -6,6 +6,7 @@ async function mount() {
   const root = document.getElementById('root');
   if (!root) return;
   const floating = new URLSearchParams(location.search).get('screen') === 'minibar';
+  document.documentElement.classList.toggle('screen-minibar', floating);
   const Component = floating
     ? (await import('./components/minibar/MiniBar')).MiniBar
     : (await import('./App')).default;

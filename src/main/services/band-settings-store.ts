@@ -22,7 +22,7 @@ export class BandSettingsStore {
   }
 
   setVibration(enabled: unknown): BandSettings {
-    if (typeof enabled !== 'boolean') throw new Error('手环震动设置无效');
+    if (typeof enabled !== 'boolean') throw new Error('手环振动设置无效');
     if (enabled === this.settings.vibrationEnabled) return this.get();
     const next = { vibrationEnabled: enabled, revision: Math.max(Date.now(), this.settings.revision + 1) };
     fs.mkdirSync(path.dirname(this.file), { recursive: true });

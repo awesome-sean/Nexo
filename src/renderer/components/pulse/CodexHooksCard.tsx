@@ -9,9 +9,9 @@ import doneExpression from '../../../../band-app/src/common/expressions/star/8.p
 import idleExpression from '../../../../band-app/src/common/expressions/sleep/4.png';
 
 const expressionExamples = [
-  { state: 'waiting', label: '等待处理', image: waitingExpression, name: '生气', description: '等待审核、补充信息或额度暂停时自动显示生气表情，短震＋长震连续六组，共十二下。双击可返回时间页。' },
+  { state: 'waiting', label: '等待处理', image: waitingExpression, name: '生气', description: '等待审核、补充信息或额度暂停时自动显示生气表情，短振＋长振连续六组，共十二下。双击可返回时间页。' },
   { state: 'working', label: '正在工作', image: workingExpression, name: 'wink', description: '任务执行中，双击时间页可查看 wink 表情。' },
-  { state: 'done', label: '任务完成', image: doneExpression, name: '星星眼', description: '完成时自动显示星星眼，连续长震四下，单次时长由手环决定。10 分钟后回到时间页。' },
+  { state: 'done', label: '任务完成', image: doneExpression, name: '星星眼', description: '完成时自动显示星星眼，连续长振四下，单次时长由手环决定。10 分钟后回到时间页。' },
   { state: 'idle', label: '空闲待命', image: idleExpression, name: '睡觉', description: '空闲无灯，双击时间页可查看睡觉表情。' },
 ] as const;
 

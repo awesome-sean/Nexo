@@ -67,10 +67,10 @@ node scripts/prepare-github-release.mjs release
 | --- | --- |
 | Nexo-Setup-<版本>.exe | Windows 安装包 |
 | Nexo-Setup-<版本>.exe.sha256 | 应用内更新的 SHA256 校验 |
-| Nexo-Band-<版本>.rpk | 与该桌面版配套的手环快应用 |
-| Nexo-Band-<版本>.rpk.sha256 | 独立 RPK 下载校验 |
+| Nexo-Band-<快应用版本>.rpk | 与该桌面版配套的手环快应用 |
+| Nexo-Band-<快应用版本>.rpk.sha256 | 独立 RPK 下载校验 |
 
-这里导出 RPK 的文件名使用电脑端发布版本，内部快应用版本仍来自其 manifest。上传完整后发布为正式最新版本。草稿和预发布版本会被更新服务忽略。
+RPK 的文件名和显示版本统一使用快应用版本，例如 Nexo-Band-1.0.2.rpk。电脑端与快应用分别记录版本。上传完整后发布为正式最新版本。草稿和预发布版本会被更新服务忽略。
 
 用户先升级带更新功能的电脑端，在「设置 → 关于 Nexo」点击「下载并安装」，校验完成后按 Windows 安装向导操作。手环保持蓝牙连接，再点击「升级快应用」。已发布的旧电脑端首次接入此功能需要手动安装新版。
 

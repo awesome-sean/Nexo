@@ -20,7 +20,8 @@ if (!bundledRpk.equals(fs.readFileSync(path.join(root, 'assets/band-app.rpk'))))
 }
 const checksum = createHash('sha256').update(fs.readFileSync(installer)).digest('hex');
 fs.writeFileSync(`${installer}.sha256`, `${checksum}  ${name}\n`);
-const bandAsset = path.join(releaseDirectory, `Nexo-Band-${pkg.version}.rpk`);
+const bandVersion = JSON.parse(fs.readFileSync(path.join(root, 'band-app/src/manifest.json'), 'utf8')).versionName;
+const bandAsset = path.join(releaseDirectory, `Nexo-Band-${bandVersion}.rpk`);
 fs.writeFileSync(bandAsset, bundledRpk);
 fs.writeFileSync(`${bandAsset}.sha256`, `${createHash('sha256').update(bundledRpk).digest('hex')}  ${path.basename(bandAsset)}\n`);
 console.log(`Release v${pkg.version} assets ready in ${releaseDirectory}`);

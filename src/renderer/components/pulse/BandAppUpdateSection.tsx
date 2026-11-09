@@ -69,7 +69,7 @@ export function BandAppUpdateSection() {
   else if (connected) status = needsUpdate ? '有可用的快应用更新' : '手环已安装当前或更新版本';
   return <section className="nexo-floating-settings-card nexo-update-card">
     <header><h3><PackageCheck size={22} />手环快应用</h3><span className="nexo-update-version">{bundled?.versionName || '读取中'}</span></header>
-    <p className="nexo-update-source">{installed != null ? `手环构建版本 ${installed} · 内置构建版本 ${bundled?.versionCode}` : '使用新版 Nexo 随附的快应用'}</p>
+    <p className="nexo-update-source">{installed != null ? (installed === bundled?.versionCode ? `已安装 v${bundled.versionName}` : installed === 2 ? '已安装 v1.0.1' : installed === 1 ? '已安装 v1.0.0' : '已读取手环版本') : '使用新版 Nexo 随附的快应用'}</p>
     <div className="nexo-update-status"><strong role="status">{status}</strong><button type="button" className="nexo-update-action" disabled={!connected || !needsUpdate || busy} onClick={() => void upgrade()}><PackageCheck size={18} />{installed === null ? '安装快应用' : '升级快应用'}</button></div>
     {busy && <progress className="nexo-update-progress" max={100} value={percentage} aria-label="快应用安装进度" />}
     {notice && <p role="status" className="nexo-update-notice">{notice}</p>}
