@@ -2,7 +2,7 @@
 
 Nexo 目前仅显示 GPT，数据来自本机 Codex：5 小时额度、每周额度、当天人民币花费估算，以及任务状态。不提供其他 AI、第三方 API 或 CC Switch 接入。
 
-当前桌面端版本为 v1.0.5，配套手环快应用为 v1.0.2。安装包见 GitHub Releases。构建顺序见 [构建说明](docs/BUILDING.md)。
+当前桌面端版本为 v1.0.4，配套手环快应用为 v1.0.2。安装包见 GitHub Releases。构建顺序见 [构建说明](docs/BUILDING.md)。
 
 ## 手环连接
 

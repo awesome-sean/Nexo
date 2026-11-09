@@ -1,30 +1,26 @@
 # 电脑应用程序发布页
 
-当前版本为 **v1.0.5**，适用于 Windows x64。
+当前版本为 **v1.0.4**，适用于 Windows x64。
 
-[下载 EXE v1.0.5](https://github.com/awesome-sean/Nexo/releases/download/v1.0.5/Nexo-Setup-1.0.5.exe) · [使用说明](../../README.md#使用说明) · [手环快应用发布页](band.md)
-
-## v1.0.5
-
-修复深浅外观未亮灯的不透明度显示。
-
-[下载 Windows 安装包 v1.0.5](https://github.com/awesome-sean/Nexo/releases/download/v1.0.5/Nexo-Setup-1.0.5.exe)
+[下载 EXE v1.0.4](https://github.com/awesome-sean/Nexo/releases/download/v1.0.4/Nexo-Setup-1.0.4.exe) · [使用说明](../../README.md#使用说明) · [手环快应用发布页](band.md)
 
 ## v1.0.4
 
-优化后台内存占用。随附手环快应用 v1.0.2。
+修复深浅外观未亮灯的不透明度显示。
 
 [下载 Windows 安装包 v1.0.4](https://github.com/awesome-sean/Nexo/releases/download/v1.0.4/Nexo-Setup-1.0.4.exe)
 
 ## v1.0.3
 
-修复连接手环问题。
+优化后台内存占用。随附手环快应用 v1.0.2。
 
 [下载 Windows 安装包 v1.0.3](https://github.com/awesome-sean/Nexo/releases/download/v1.0.3/Nexo-Setup-1.0.3.exe)
 
-## v1.0.2（跳过）
+## v1.0.2
 
-电脑端从 v1.0.1 直接迭代至 v1.0.3，此版本号跳过发布。手环快应用 v1.0.2 见[手环快应用发布页](band.md)。
+修复连接手环问题。
+
+[下载 Windows 安装包 v1.0.2](https://github.com/awesome-sean/Nexo/releases/download/v1.0.2/Nexo-Setup-1.0.2.exe)
 
 ## v1.0.1
 
