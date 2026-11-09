@@ -10,10 +10,10 @@
 
 [下载 Windows 安装包 v1.0.1](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe)
 
-## 1.0.0
+## v1.0.0
 
 首次发布电脑应用程序，包含额度与花费估算、Codex 任务状态联动、悬浮窗自定义、手环管理、开机自启动和覆盖升级。
 
-[下载 Windows 安装包 1.0.0](https://github.com/awesome-sean/Nexo/releases/download/v1.0.0/Nexo-Setup-1.0.0.exe)
+[下载 Windows 安装包 v1.0.0](https://github.com/awesome-sean/Nexo/releases/download/v1.0.0/Nexo-Setup-1.0.0.exe)
 
 [返回项目首页](../../README.md#版本更新)
