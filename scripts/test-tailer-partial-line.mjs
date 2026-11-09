@@ -54,6 +54,29 @@ const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pulse-tailer-test-'));
   tailer.stop();
 }
 
+// A record larger than the read buffer must preserve UTF-8 and await its final newline.
+{
+  const file = path.join(tmpDir, 'chunked.jsonl');
+  const sm = makeSM();
+  const tailer = new CodexSessionTailer(sm, tmpDir);
+  const parsed = [];
+  const parseLine = tailer.parseLine.bind(tailer);
+  tailer.parseLine = (line, context) => { parsed.push(JSON.parse(line)); parseLine(line, context); };
+  const message = '跨块文字🙂'.repeat(40000);
+  const record = JSON.stringify({type:'event_msg',payload:{type:'agent_message',message}});
+  const bytes = Buffer.from(record + '\n');
+  fs.writeFileSync(file, bytes.subarray(0, bytes.length - 2));
+  tailer.readFullFile(file);
+  assert.equal(sm.calls.length, 0, 'initial partial records must wait for completion');
+  fs.appendFileSync(file, bytes.subarray(bytes.length - 2));
+  tailer.readNewLines(file);
+  assert.equal(sm.calls.length, 1, 'a large record must be parsed exactly once');
+  assert.equal(parsed[0].payload.message, message, 'UTF-8 must survive buffer boundaries');
+  assert.equal(sm.calls[0].patch.lastMessage, message.slice(-1000), 'retain the existing preview length');
+  tailer.readNewLines(file);
+  assert.equal(sm.calls.length, 1);
+  tailer.stop();
+}
 fs.rmSync(tmpDir, { recursive: true, force: true });
 
 console.log('✅ tailer 半行自检通过（Codex）');

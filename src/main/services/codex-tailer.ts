@@ -141,63 +141,56 @@ export class CodexSessionTailer {
   }
 
   private readFullFile(filePath: string) {
-    try {
-      if (!fs.existsSync(filePath)) return;
-      const content = fs.readFileSync(filePath, 'utf-8');
-      const lines = content.split(/\r?\n/);
-      const context: CodexContext = {};
-      this.contexts.set(filePath, context);
-
-      for (const line of lines) {
-        if (!line.trim()) continue;
-        this.parseLine(line, context);
-      }
-
-      this.filePositions.set(filePath, Buffer.byteLength(content, 'utf-8'));
-    } catch (err) {
-      console.error(`[CodexTailer] Error reading full file ${filePath}:`, err);
-    }
+    this.filePositions.set(filePath, 0);
+    this.contexts.set(filePath, {});
+    this.readNewLines(filePath);
   }
 
   private readNewLines(filePath: string) {
     try {
-      if (!fs.existsSync(filePath)) return;
       const stat = fs.statSync(filePath);
-      let pos = this.filePositions.get(filePath) ?? 0;
-      if (stat.size < pos) pos = 0; // Truncated or rotated
-      if (stat.size === pos) return;
-
-      const fd = fs.openSync(filePath, 'r');
-      const bytesToRead = stat.size - pos;
-      const buffer = Buffer.alloc(bytesToRead);
-      try {
-        fs.readSync(fd, buffer, 0, bytesToRead, pos);
-      } finally {
-        fs.closeSync(fd);
-      }
-
-      // 只处理到最后一个换行为止：
-      // 把位置推到 stat.size 会把尾部那半行永久丢掉，多字节字符还可能被切坏。
-      const lastNewline = buffer.lastIndexOf(0x0a);
-      if (lastNewline < 0) return;
-
-      this.filePositions.set(filePath, pos + lastNewline + 1);
+      let position = this.filePositions.get(filePath) ?? 0;
+      if (stat.size < position) position = 0;
+      if (stat.size === position) return;
 
       let context = this.contexts.get(filePath);
       if (!context) {
-        // Existing files were fast-forwarded at startup. Recover their identity before reading appended events.
         context = this.readFileContext(filePath);
         this.contexts.set(filePath, context);
       }
 
-      const chunk = buffer.subarray(0, lastNewline).toString('utf-8');
-      const lines = chunk.split(/\r?\n/);
-      for (const line of lines) {
-        if (!line.trim()) continue;
-        this.parseLine(line, context);
+      const fd = fs.openSync(filePath, 'r');
+      try {
+        const buffer = Buffer.alloc(256 * 1024);
+        let fragments: Buffer[] = [];
+        // Only a single unfinished record can span buffers. Decode after its newline
+        // so UTF-8 characters split across reads remain intact.
+        while (position < stat.size) {
+          const length = fs.readSync(fd, buffer, 0, Math.min(buffer.length, stat.size - position), position);
+          if (!length) break;
+          let start = 0;
+          let newline = buffer.indexOf(0x0a, start);
+          while (newline >= 0 && newline < length) {
+            const segment = buffer.subarray(start, newline);
+            const line = fragments.length
+              ? Buffer.concat([...fragments, segment]).toString('utf8')
+              : segment.toString('utf8');
+            fragments = [];
+            this.filePositions.set(filePath, position + newline + 1);
+            if (line.trim()) this.parseLine(line, context);
+            start = newline + 1;
+            newline = buffer.indexOf(0x0a, start);
+          }
+          if (start < length) fragments.push(Buffer.from(buffer.subarray(start, length)));
+          position += length;
+        }
+        // Leave the saved offset at the last complete record. The next read picks
+        // up any partially written JSON, including incomplete UTF-8 sequences.
+      } finally {
+        fs.closeSync(fd);
       }
-    } catch (err) {
-      // Ignore transient file lock errors
+    } catch {
+      // The writer may temporarily lock, rotate or remove the file.
     }
   }
 
