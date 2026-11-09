@@ -6,7 +6,7 @@
 
 ## v1.0.2
 
-统一使用“振动”表述，版本展示简化为版本号。
+修复错别字，版本展示简化为版本号。
 
 [下载手环快应用安装包 v1.0.2（RPK）](https://github.com/awesome-sean/Nexo/releases/download/v1.0.2/Nexo-Band-1.0.2.rpk)
 
