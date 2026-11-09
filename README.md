@@ -23,8 +23,8 @@
 
 | 应用 | 当前版本 | 发布页 |
 | --- | --- | --- |
-| 电脑应用程序 · Windows | **1.0.1** | [电脑应用程序发布页](docs/releases/desktop.md) |
-| 手环快应用 · 小米手环 | **1.0.1** · 构建 2 | [手环快应用发布页](docs/releases/band.md) |
+| 电脑应用程序 · Windows | **v1.0.1** | [电脑应用程序发布页](docs/releases/desktop.md) |
+| 手环快应用 · 小米手环 | **v1.0.1** · 构建 2 | [手环快应用发布页](docs/releases/band.md) |
 
 ## 主要功能
 
@@ -74,7 +74,7 @@
 
 ### Windows 桌面悬浮窗
 
-下载并安装 [电脑端 EXE 1.0.1](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe)，在电脑上登录 Codex，即可单独使用桌面悬浮窗。
+下载并安装 [电脑端 EXE v1.0.1](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe)，在电脑上登录 Codex，即可单独使用桌面悬浮窗。
 
 #### 显示与个性化
 
@@ -97,7 +97,7 @@
 
 ### 小米手环桌搭
 
-需要安装 [电脑端 EXE 1.0.1](://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe) 和 [手环 RPK 1.0.1](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Band-1.0.1.rpk)，通过电脑蓝牙连接手环，并保持 Nexo 在后台运行。
+需要安装 [电脑端 EXE v1.0.1](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe) 和 [手环 RPK v1.0.1](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Band-1.0.1.rpk)，通过电脑蓝牙连接手环，并保持 Nexo 在后台运行。
 
 #### 安装与连接
 
@@ -142,7 +142,7 @@
 
 ## 快应用升级
 
-安装配套电脑端后，保持手环连接，在「设置 → 关于 Nexo」点击「升级快应用」，覆盖安装手环 1.0.1（构建 2）。也可手动选择下载的 RPK 安装。已安装构建 3 的手环，请先卸载旧快应用，再安装构建 2。
+安装配套电脑端后，保持手环连接，在「设置 → 关于 Nexo」点击「升级快应用」，覆盖安装手环 v1.0.1（构建 2）。也可手动选择下载的 RPK 安装。已安装构建 3 的手环，请先卸载旧快应用，再安装构建 2。
 
 
 ## 支持设备

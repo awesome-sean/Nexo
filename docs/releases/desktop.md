@@ -1,14 +1,14 @@
 # 电脑应用程序发布页
 
-当前版本为 **1.0.1**，适用于 Windows x64。
+当前版本为 **v1.0.1**，适用于 Windows x64。
 
-[下载 EXE 1.0.1](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe) · [使用说明](../../README.md#使用说明) · [手环快应用发布页](band.md)
+[下载 EXE v1.0.1](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe) · [使用说明](../../README.md#使用说明) · [手环快应用发布页](band.md)
 
-## 1.0.1
+## v1.0.1
 
 修复长命令误亮红灯。自动审批保持黄灯，审批方式未知时采用十秒兜底。
 
-[下载 Windows 安装包 1.0.1](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe)
+[下载 Windows 安装包 v1.0.1](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Setup-1.0.1.exe)
 
 ## 1.0.0
 
