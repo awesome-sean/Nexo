@@ -6,7 +6,7 @@
 
 ## v1.0.4
 
-优化后台内存占用，
+优化后台内存占用。
 
 [下载 Windows 安装包 v1.0.4](https://github.com/awesome-sean/Nexo/releases/download/v1.0.4/Nexo-Setup-1.0.4.exe)
 
