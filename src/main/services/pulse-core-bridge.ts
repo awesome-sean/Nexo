@@ -103,6 +103,10 @@ export class PulseCoreBridge {
     };
   }
 
+  setWindow(win: BrowserWindow | null): void {
+    this.win = win;
+  }
+
   attach(win: BrowserWindow | null): void {
     this.detached = false;
     this.win = win;

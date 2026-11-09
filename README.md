@@ -15,7 +15,7 @@
 </p>
 
 - **Windows 桌面悬浮窗**。下载并安装电脑端 EXE 即可使用。<br>
-  最新 EXE 下载地址　[https://github.com/awesome-sean/Nexo/releases/download/v1.0.3/Nexo-Setup-1.0.3.exe](https://github.com/awesome-sean/Nexo/releases/download/v1.0.3/Nexo-Setup-1.0.3.exe)
+  最新 EXE 下载地址　[https://github.com/awesome-sean/Nexo/releases/download/v1.0.4/Nexo-Setup-1.0.4.exe](https://github.com/awesome-sean/Nexo/releases/download/v1.0.4/Nexo-Setup-1.0.4.exe)
 - **小米手环横屏桌搭**。需要电脑端 EXE 和手环 RPK，连接后联动使用。<br>
   最新 RPK 下载地址　[https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Band-1.0.1.rpk](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Band-1.0.1.rpk)
 
@@ -23,7 +23,7 @@
 
 | 应用 | 当前版本 | 发布页 |
 | --- | --- | --- |
-| 电脑应用程序 · Windows | **v1.0.3** | [电脑应用程序发布页](docs/releases/desktop.md) |
+| 电脑应用程序 · Windows | **v1.0.4** | [电脑应用程序发布页](docs/releases/desktop.md) |
 | 手环快应用 · 小米手环 | **v1.0.1** · 构建 2 | [手环快应用发布页](docs/releases/band.md) |
 
 ## 主要功能
@@ -74,7 +74,7 @@
 
 ### Windows 桌面悬浮窗
 
-下载并安装 [电脑端 EXE v1.0.3](https://github.com/awesome-sean/Nexo/releases/download/v1.0.3/Nexo-Setup-1.0.3.exe)，在电脑上登录 ChatGPT，即可单独使用桌面悬浮窗。
+下载并安装 [电脑端 EXE v1.0.4](https://github.com/awesome-sean/Nexo/releases/download/v1.0.4/Nexo-Setup-1.0.4.exe)，在电脑上登录 ChatGPT，即可单独使用桌面悬浮窗。
 
 #### 显示与个性化
 
@@ -97,7 +97,7 @@
 
 ### 小米手环桌搭
 
-需要安装 [电脑端 EXE v1.0.3](https://github.com/awesome-sean/Nexo/releases/download/v1.0.3/Nexo-Setup-1.0.3.exe) 和 [手环 RPK v1.0.1](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Band-1.0.1.rpk)，通过电脑蓝牙连接手环，并保持 Nexo 在后台运行。
+需要安装 [电脑端 EXE v1.0.4](https://github.com/awesome-sean/Nexo/releases/download/v1.0.4/Nexo-Setup-1.0.4.exe) 和 [手环 RPK v1.0.1](https://github.com/awesome-sean/Nexo/releases/download/v1.0.1/Nexo-Band-1.0.1.rpk)，通过电脑蓝牙连接手环，并保持 Nexo 在后台运行。
 
 #### 安装与连接
 

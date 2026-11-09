@@ -22,8 +22,12 @@ type AppScreen = Page | 'minibar';
 
 function getInitialScreen(): AppScreen {
   const screen = new URLSearchParams(window.location.search).get('screen');
-  if (screen === 'minibar' || screen === 'band' || screen === 'settings' || screen === 'diagnostics') return screen;
+  if (screen === 'floating' || screen === 'minibar' || screen === 'band' || screen === 'settings' || screen === 'diagnostics') return screen;
   if (screen === 'watchface') return 'band';
+  try {
+    const saved = localStorage.getItem('nexo-workspace-page');
+    if (['floating', 'band', 'settings', 'diagnostics', 'support', 'about'].includes(saved || '')) return saved as Page;
+  } catch { /* Fall back to the dashboard if storage is unavailable. */ }
   return 'floating';
 }
 
@@ -35,6 +39,10 @@ export function App() {
     try { return localStorage.getItem('pulse-theme') === 'dark' ? 'dark' : 'light'; }
     catch { return 'light'; }
   });
+  useEffect(() => {
+    if (screen === 'minibar') return;
+    try { localStorage.setItem('nexo-workspace-page', page); } catch { /* Preferences remain usable in memory. */ }
+  }, [page, screen]);
   const [showSetup, setShowSetup] = useState(false);
   const [setupStartIndex, setSetupStartIndex] = useState(0);
   const [errors, setErrors] = useState<PulseErrorEntry[]>([]);

@@ -1,3 +1,4 @@
+import { releaseHiddenWindow } from './services/release-hidden-window';
 import { app, BrowserWindow, ipcMain, Tray, screen, shell, dialog } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs';
@@ -42,16 +43,12 @@ let showMainOnReady = !isAutoStartLaunch();
 app.on('second-instance', (_event, commandLine) => {
   if (isAutoStartLaunch(commandLine)) return;
   showMainOnReady = true;
-  if (win) {
-    if (win.isMinimized()) win.restore();
-    win.show();
-    win.focus();
-  }
+  showMainWindow();
 });
 
 let win: BrowserWindow | null = null;
 let tray: Tray | null = null;
-// 托盘常驻：窗口在真正退出前不许被销毁，否则托盘回调会打在已销毁对象上
+// 主界面按需创建，托盘与后台服务独立常驻。
 let isQuitting = false;
 
 const sessionManager = new SessionManager();
@@ -64,7 +61,7 @@ const resolveSessionDetection = (): Partial<Record<AgentKind, SessionDetectionMo
 sessionManager.on('update', sessions => traffic.trackSessions(sessions));
 statusServer.start();
 
-// 有效手环配置在启动后自动恢复连接，首次导入仍由设置向导完成。
+// 手环由用户手动发起连接。
 const coreClient = new PulseCoreClient();
 const astroBoxImport = new AstroBoxImportService(path.join(getCoreLocalAppData(), 'astrobox-identity.json'), deviceConfigService);
 const coreBridge = new PulseCoreBridge(coreClient,()=>bandSettings.get());
@@ -92,7 +89,17 @@ const INITIAL_SCREEN =
     ? process.env.PULSE_SCREEN
     : 'main';
 
-function createWindow() {
+function showMainWindow(): void {
+  showMainOnReady = true;
+  if (!win || win.isDestroyed()) createWindow();
+  else {
+    if (win.isMinimized()) win.restore();
+    win.show();
+    win.focus();
+  }
+}
+
+function createWindow(initialScreen: string = INITIAL_SCREEN) {
   const workArea = screen.getPrimaryDisplay().workAreaSize;
   const cjsPreload = path.join(import.meta.dirname, '../preload/index.cjs');
   const jsPreload = path.join(import.meta.dirname, '../preload/index.js');
@@ -158,29 +165,23 @@ function createWindow() {
   });
 
   if (process.env.VITE_DEV_SERVER_URL) {
-    win.loadURL(`${process.env.VITE_DEV_SERVER_URL}?screen=${INITIAL_SCREEN}`);
+    win.loadURL(`${process.env.VITE_DEV_SERVER_URL}?screen=${initialScreen}`);
   } else {
     win.loadFile(path.join(import.meta.dirname, '../../dist/index.html'), {
-      query: { screen: INITIAL_SCREEN },
+      query: { screen: initialScreen },
     });
   }
 
-  // Relay session updates to renderer
-  sessionManager.on('update', (sessions) => {
-    if (win && !win.isDestroyed()) {
-      win.webContents.send('sessions-update', sessions);
-    }
+  const mainWindow = win;
+  coreBridge.setWindow(mainWindow);
+  appInstallService.attach(mainWindow);
+  releaseHiddenWindow(mainWindow, () => appInstallService.hasActiveInstallation() || desktopUpdate.downloading);
+  mainWindow.on('closed', () => {
+    if (win !== mainWindow) return;
+    win = null;
+    coreBridge.setWindow(null);
+    appInstallService.attach(null);
   });
-
-  coreBridge.attach(win);
-  appInstallService.attach(win);
-
-  tray = createTray(
-    win,
-    quitPulse,
-    toggleMiniBar,
-    isMiniBarVisible
-  );
 }
 
 // IPC Handlers
@@ -277,8 +278,20 @@ ipcMain.on('window-maximize', () => {
 app.whenReady().then(async () => {
   try { migrateAutoLaunchEntry(); }
   catch (error) { console.warn('[Nexo] 开机启动参数迁移失败', error); }
-  createWindow();
-  createMiniBarWindow(sessionManager, statusServer, resolveSessionDetection);
+  if (showMainOnReady) createWindow();
+  coreBridge.attach(win);
+  tray = createTray(win, quitPulse, toggleMiniBar, isMiniBarVisible, () => win, showMainWindow);
+  sessionManager.on('update', sessions => {
+    if (win && !win.isDestroyed()) win.webContents.send('sessions-update', sessions);
+  });
+  createMiniBarWindow(sessionManager, statusServer, resolveSessionDetection, () => {
+    if (!win) { showMainOnReady = true; createWindow('floating'); return; }
+    showMainWindow();
+    const window = win!;
+    const navigate = () => { if (!window.isDestroyed()) window.webContents.send('nexo:open-minibar-settings'); };
+    if (window.webContents.isLoading()) window.webContents.once('did-finish-load', navigate);
+    else navigate();
+  });
   ipcMain.handle('hook:status',()=>hookInstaller.status());
   ipcMain.handle('hook:install',()=>({ok:true,...hookInstaller.install()}));
   ipcMain.handle('hook:uninstall',()=>({ok:true,...hookInstaller.remove()}));

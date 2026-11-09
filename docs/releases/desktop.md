@@ -1,8 +1,14 @@
 # 电脑应用程序发布页
 
-当前版本为 **v1.0.3**，适用于 Windows x64。
+当前版本为 **v1.0.4**，适用于 Windows x64。
 
-[下载 EXE v1.0.3](https://github.com/awesome-sean/Nexo/releases/download/v1.0.3/Nexo-Setup-1.0.3.exe) · [使用说明](../../README.md#使用说明) · [手环快应用发布页](band.md)
+[下载 EXE v1.0.4](https://github.com/awesome-sean/Nexo/releases/download/v1.0.4/Nexo-Setup-1.0.4.exe) · [使用说明](../../README.md#使用说明) · [手环快应用发布页](band.md)
+
+## v1.0.4
+
+优化后台内存占用，主界面收起 30 秒后释放窗口，重新打开时按已保存配置加载。精简悬浮窗加载内容。
+
+[下载 Windows 安装包 v1.0.4](https://github.com/awesome-sean/Nexo/releases/download/v1.0.4/Nexo-Setup-1.0.4.exe)
 
 ## v1.0.3
 

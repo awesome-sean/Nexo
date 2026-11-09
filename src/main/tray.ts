@@ -4,10 +4,12 @@ import path from 'node:path';
 import fs from 'node:fs';
 
 export function createTray(
-  mainWindow: BrowserWindow,
+  mainWindow: BrowserWindow | null,
   onFullExit: () => void,
   onToggleMiniBar?: () => void,
-  isMiniBarVisible?: () => boolean
+  isMiniBarVisible?: () => boolean,
+  getMainWindow = () => mainWindow,
+  showMainWindow = () => { mainWindow?.show(); mainWindow?.focus(); }
 ): Tray {
   const iconPath = path.resolve(import.meta.dirname, '../../assets/icon.png');
   let icon = nativeImage.createEmpty();
@@ -20,10 +22,10 @@ export function createTray(
   tray.setToolTip('Nexo');
 
   // 退出过程中窗口先于托盘销毁，这时托盘回调仍可能触发
-  const alive = () => !mainWindow.isDestroyed();
+  const alive = () => { const window = getMainWindow(); return !!window && !window.isDestroyed(); };
 
   const buildMenu = () => {
-    const isVisible = alive() && mainWindow.isVisible();
+    const isVisible = alive() && getMainWindow()!.isVisible();
     const miniBarVisible = isMiniBarVisible ? isMiniBarVisible() : false;
 
     const items: MenuItemConstructorOptions[] = [
@@ -32,12 +34,10 @@ export function createTray(
         type: 'checkbox',
         checked: isVisible,
         click: () => {
-          if (!alive()) return;
-          if (mainWindow.isVisible()) {
-            mainWindow.hide();
+          if (alive() && getMainWindow()!.isVisible()) {
+            getMainWindow()!.hide();
           } else {
-            mainWindow.show();
-            mainWindow.focus();
+            showMainWindow();
           }
         },
       },
@@ -75,12 +75,10 @@ export function createTray(
   tray.on('right-click', () => tray.popUpContextMenu(buildMenu()));
 
   tray.on('click', () => {
-    if (!alive()) return;
-    if (mainWindow.isVisible()) {
-      mainWindow.hide();
+    if (alive() && getMainWindow()!.isVisible()) {
+      getMainWindow()!.hide();
     } else {
-      mainWindow.show();
-      mainWindow.focus();
+      showMainWindow();
     }
   });
 

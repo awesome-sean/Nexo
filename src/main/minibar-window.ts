@@ -47,6 +47,7 @@ export {
 };
 
 let minibarWin: BrowserWindow | null = null;
+let openSettingsHandler: (() => void) | undefined;
 let isExpanded = false;
 let expandedSurface: 'details' | 'menu' = 'details';
 let currentDockSide: DockSide = 'right';
@@ -242,6 +243,7 @@ function setEdgePeek(active: boolean): void {
 }
 
 function openMiniBarSettings(): void {
+  if (openSettingsHandler) { openSettingsHandler(); return; }
   const window = BrowserWindow.getAllWindows().find((candidate) => candidate !== minibarWin && !candidate.isDestroyed());
   window?.show();
   window?.focus();
@@ -539,8 +541,10 @@ export function resetMiniBarDock(): void {
 export function createMiniBarWindow(
   sessionManager: SessionManager,
   statusServer: StatusServer,
-  detection?: () => Partial<Record<AgentKind, SessionDetectionMode>>
+  detection?: () => Partial<Record<AgentKind, SessionDetectionMode>>,
+  onOpenSettings?: () => void
 ): BrowserWindow {
+  openSettingsHandler = onOpenSettings;
   sessionManagerRef = sessionManager;
   statusServerRef = statusServer;
   detectionProvider = detection ?? null;
