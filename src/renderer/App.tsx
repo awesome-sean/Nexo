@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, PanelsTopLeft, RefreshCw, Watch } from 'lucide-react';
 import { TopBar } from './components/layout/TopBar';
 import { ContentArea } from './components/layout/ContentArea';
 import { QuotaSummary } from './components/pulse/QuotaSummary';
 import { BandDeskPage } from './components/pulse/BandDeskPage';
+import { HooksSetupDialog } from './components/pulse/HooksSetupDialog';
 import { SettingsPage } from './components/pulse/SettingsPage';
 import { SettingsHub, type SettingsSection } from './components/pulse/SettingsHub';
 import { SetupWizard } from './components/setup';
@@ -44,6 +45,26 @@ export function App() {
     try { localStorage.setItem('nexo-workspace-page', page); } catch { /* Preferences remain usable in memory. */ }
   }, [page, screen]);
   const [showSetup, setShowSetup] = useState(false);
+  const [showHooks, setShowHooks] = useState(false);
+  const [hooksConfigured, setHooksConfigured] = useState(false);
+  const hooksPromptChecked = useRef(false);
+  useEffect(() => {
+    if (screen === 'minibar') return;
+    let active = true;
+    const readHooks = () => {
+      void window.pulse?.getHookStatus().then(status => {
+        if (!active) return;
+        setHooksConfigured(status.installed === true);
+        if (!hooksPromptChecked.current) {
+          hooksPromptChecked.current = true;
+          if (!status.installed) setShowHooks(true);
+        }
+      }).catch(() => {});
+    };
+    readHooks();
+    window.addEventListener('focus', readHooks);
+    return () => { active = false; window.removeEventListener('focus', readHooks); };
+  }, [screen]);
   const [setupStartIndex, setSetupStartIndex] = useState(0);
   const [errors, setErrors] = useState<PulseErrorEntry[]>([]);
   const [core, setCore] = useState<PulseCoreState | null>(null);
@@ -129,7 +150,7 @@ export function App() {
 
   return <div className="nexo-app nexo-app--workspace w-full h-full flex flex-col text-[var(--text-primary)] overflow-hidden transition-colors duration-200">
     <div className="workspace-fixed-header">
-      <TopBar theme={theme} onThemeChange={changeTheme} onNavigate={navigate} settingsActive={!mainPage} updateAvailable={updateAvailable} />
+      <TopBar theme={theme} onThemeChange={changeTheme} onNavigate={navigate} settingsActive={!mainPage} updateAvailable={updateAvailable} hooksConfigured={hooksConfigured} hooksActive={showHooks} onOpenHooks={() => setShowHooks(true)} />
       <div className="workspace-fixed-toolbar">
         <div className="workspace-toolbar">
           {mainPage ? <nav className="workspace-tabs" aria-label="工作台">
@@ -151,6 +172,7 @@ export function App() {
         </SettingsHub>}
       </div>
     </ContentArea>
+    {showHooks && <HooksSetupDialog onClose={() => setShowHooks(false)} onConfiguredChange={setHooksConfigured} />}
     {showSetup && <SetupWizard initialStepIndex={setupStartIndex} onClose={() => setShowSetup(false)} onFinish={() => setShowSetup(false)} />}
   </div>;
 }

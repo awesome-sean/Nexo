@@ -25,6 +25,8 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onClose, onFinish, ini
     const start = typeof initialStepIndex === 'number' ? initialStepIndex : 0;
     return Math.min(Math.max(0, start), max);
   });
+  const currentIndexRef = useRef(currentIndex);
+  currentIndexRef.current = currentIndex;
   const [stepError, setStepError] = useState<string | null>(null);
 
   // 严格记录每一步的真实执行状态，绝不根据访问顺序伪造成功标记
@@ -160,7 +162,24 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onClose, onFinish, ini
 
   const handleConnectBandSuccess = useCallback(() => {
     setStepExecution((prev) => ({ ...prev, connect_band: 'success' }));
-  }, []);
+    void (async () => {
+      try {
+        const bridge = window.pulse;
+        if (!bridge?.appInstall) return;
+        const [bundled, result] = await Promise.all([bridge.appInstall.getBundledInfo(), bridge.quickApps.list()]);
+        if (!dialogRef.current?.isConnected || currentIndexRef.current !== 1) return;
+        const packageId = bundled.packageId || 'com.codeisland.band';
+        if (result.apps.some(app => app.package_name === packageId)) {
+          onFinish?.();
+          onClose();
+        } else {
+          setCurrentIndex(2);
+        }
+      } catch {
+        setStepError('连接已成功，读取安装状态失败。可关闭向导，在桌搭页刷新版本。');
+      }
+    })();
+  }, [onFinish, onClose]);
 
   const handleInstallAppSuccess = useCallback(() => {
     setStepExecution((prev) => ({ ...prev, install_app: 'success' }));

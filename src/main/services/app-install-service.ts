@@ -526,6 +526,7 @@ export class AppInstallService {
     };
 
     if (this.coreBridge) {
+      const committingSession = this.session;
       const targetSessionId = this.session.coreSessionId || this.session.installId;
       const p = (async () => {
         try {
@@ -536,6 +537,15 @@ export class AppInstallService {
             if (coreRes?.status && coreRes.status !== 'completed' && coreRes.status !== 'installed') {
               this.session.status = coreRes.status as InstallSessionStatus;
             }
+          }
+          if (
+            (coreRes?.status === 'completed' || coreRes?.status === 'installed') &&
+            this.session === committingSession &&
+            !committingSession.cancelRequested &&
+            committingSession.packageId === 'com.codeisland.band'
+          ) {
+            try { await this.coreBridge!.launchNexoApp(); }
+            catch (error) { console.warn('[Nexo] 安装成功，自动打开快应用失败', error); }
           }
           return {
             ok: true,

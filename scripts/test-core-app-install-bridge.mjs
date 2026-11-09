@@ -291,3 +291,25 @@ test('7. 验证没有真实设备调用 (零子进程、零底层硬件操作)',
     child_process.execFile = originalExecFile;
   }
 });
+
+test('Nexo opens immediately after verified installation and launch failure preserves success', async () => {
+  for (const launchFails of [false, true]) {
+    const rpc = new MockRpcClient();
+    rpc.customHandler = async (method, params) => {
+      if (method === 'device.app.install.prepare') return { status: 'preparing', sessionId: 'launch-install', chunkSize: 512, totalChunks: Math.ceil(params.fileSize / 512) };
+      if (method === 'device.app.install.chunk') return { status: 'transferring' };
+      if (method === 'device.app.install.commit') return { status: 'completed' };
+      if (method === 'device.app.launch') { if (launchFails) throw new Error('test launch failure'); return { sent: true }; }
+      throw new Error('Unexpected method');
+    };
+    const service = new AppInstallService(new CoreAppInstallBridge(rpc));
+    const prepared = await service.prepareFromFile(RPK_PATH);
+    assert.equal(rpc.calls.filter(call => call.method === 'device.app.launch').length, 0);
+    const result = await service.sendFileChunks(prepared.installId);
+    assert.equal(result.coreStatus, 'completed');
+    const launch = rpc.calls.filter(call => call.method === 'device.app.launch');
+    assert.equal(launch.length, 1);
+    assert.equal(launch[0].params.package, 'com.codeisland.band');
+    assert.ok(rpc.calls.findIndex(call => call.method === 'device.app.launch') > rpc.calls.findIndex(call => call.method === 'device.app.install.commit'));
+  }
+});

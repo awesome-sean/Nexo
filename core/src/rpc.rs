@@ -374,6 +374,17 @@ fn dispatch(core: &Arc<Core>, line: &str) -> (String, bool) {
                 Err(e) => (error_resp(&id,"app_list_failed",&e).to_string(),false),
             }
         }
+        "device.app.launch" => {
+            let package = params["package"].as_str().unwrap_or("");
+            if package != "com.codeisland.band" {
+                return (error_resp(&id, "invalid_params", "只允许启动 Nexo 快应用").to_string(), false);
+            }
+            let result = core.install.lock().unwrap().launch_quick_app(package);
+            match result {
+                Ok(()) => (serde_json::json!({"id":id,"ok":true,"result":{"sent":true,"responsive":true}}).to_string(), false),
+                Err(e) => (error_resp(&id, "app_launch_failed", &e).to_string(), false),
+            }
+        }
         "device.app.remove" => {
             let package = params["package"].as_str().unwrap_or("");
             if package.is_empty() { return (error_resp(&id,"invalid_params","缺少包名").to_string(),false); }

@@ -15,7 +15,7 @@ const expressionExamples = [
   { state: 'idle', label: '空闲待命', image: idleExpression, name: '睡觉', description: '空闲无灯，双击时间页可查看睡觉表情。' },
 ] as const;
 
-export function CodexHooksCard() {
+export function CodexHooksCard({ onConfiguredChange }: { onConfiguredChange?: (configured: boolean) => void }) {
   const [hook, setHook] = useState<HookStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
@@ -23,10 +23,10 @@ export function CodexHooksCard() {
   useEffect(() => {
     let active = true;
     window.pulse?.getHookStatus().then(value => {
-      if (active) setHook(value);
+      if (active) { setHook(value); onConfiguredChange?.(value.installed === true); }
     }).catch(() => { if (active) setNotice('读取 Codex Hooks 配置失败'); });
     return () => { active = false; };
-  }, []);
+  }, [onConfiguredChange]);
 
   const changeHook = async () => {
     if (!window.pulse) return;
@@ -36,6 +36,7 @@ export function CodexHooksCard() {
       const result = hook?.installed ? await window.pulse.uninstallHook() : await window.pulse.installHook();
       if (!result.ok) throw new Error(result.error || '操作失败');
       setHook({ installed: result.installed === true, settingsPath: result.settingsPath || '', command: result.command || null });
+      onConfiguredChange?.(result.installed === true);
       setNotice(result.installed ? '配置已写入。到 Codex「设置 → Hooks」审核并信任 Nexo 命令，然后新开会话。' : 'Nexo Hooks 已移除');
     } catch (error) {
       setNotice(error instanceof Error ? error.message : '操作失败');
@@ -50,15 +51,13 @@ export function CodexHooksCard() {
       <span className="workspace-configuration-state"><ShieldCheck size={15} />{hook?.installed ? '配置已写入' : '待配置'}</span>
     </div>
     <div className="workspace-hook-action">
-      <p>让手环跟随 Codex 任务自动切换表情与提醒。</p>
+      <p>让桌面悬浮窗与手环同步 Codex 任务状态。</p>
       <button type="button" className="btn-primary nexo-action" disabled={busy || !hook} onClick={() => void changeHook()}>
         {busy ? '处理中…' : hook?.installed ? '移除配置' : '配置 Hooks'}<ExternalLink size={15} />
       </button>
     </div>
     {notice && <p className="nexo-hook-guide" role="status">{notice}</p>}
     <div className="nexo-traffic-legend"><span data-state="waiting">红灯 · 等待处理 / 额度暂停</span><span data-state="working">黄灯 · 正在工作</span><span data-state="done">绿灯 · 最近完成</span><span>空闲 · 无灯</span></div>
-    <p className="nexo-hook-guide">有任务执行时保持黄灯，全部完成后亮绿灯。需要审核、回答问题或额度不足暂停时，优先亮红灯。</p>
-    <BandVibrationSettings />
     <details className="workspace-hook-help">
       <summary>如何启用状态联动<ChevronDown size={15} /></summary>
       <ol>
@@ -67,7 +66,10 @@ export function CodexHooksCard() {
         <li>新开 Codex 会话，保持 Nexo 与手环连接。命令行版可通过 <code>/hooks</code> 完成审核。</li>
       </ol>
     </details>
-    <div className="workspace-expression-guide">
+    <details className="workspace-hook-help workspace-hook-band-help">
+      <summary>手环提醒与表情<ChevronDown size={15} /></summary>
+      <BandVibrationSettings />
+      <div className="workspace-expression-guide">
       <h4>手环表情怎么用</h4>
       <div className="workspace-expression-states">
         {expressionExamples.map(item => <div className="workspace-expression-state" key={item.state} data-state={item.state}>
@@ -77,6 +79,7 @@ export function CodexHooksCard() {
       </div>
       <p className="workspace-expression-example"><strong>例如</strong>让 Codex 修改一段代码，工作时可双击时间页查看 wink。遇到审核会自动切到生气表情，在电脑端同意并恢复执行后返回时间页。任务完成后显示星星眼，10 分钟后自动返回。</p>
       <p className="workspace-expression-gesture">双击时间页与表情页可来回切换。等待处理时自动显示表情，双击可提前返回时间页。保持表情页时，任务恢复后自动返回。</p>
-    </div>
+      </div>
+    </details>
   </section>;
 }

@@ -479,6 +479,40 @@ impl XiaomiInstallRuntimeBridge {
         Err("读取快应用列表超时".into())
     }
 
+    pub fn launch_quick_app(&mut self, package: &str) -> Result<()> {
+        let epoch = crate::live::device_connection_epoch();
+        let activity = crate::live::nexo_app_activity();
+        let apps = self.fetch_quick_apps()?;
+        let app = apps.iter().find(|app| app.package_name == package)
+            .ok_or("Nexo 快应用尚未安装，请先安装")?;
+        let payload = installed_list::build_quick_app_launch(app, "")?;
+        // Authentication readiness can precede dismissal of the watch's connection UI.
+        std::thread::sleep(Duration::from_millis(1000));
+        for attempt in 1..=3 {
+            if crate::live::device_connection_epoch() != epoch || !self.install_session.is_linked() {
+                return Err("连接已变化，取消本次快应用启动".into());
+            }
+            if crate::live::nexo_app_activity() != activity {
+                install_log("launch: 已收到 Nexo 快应用通信响应");
+                return Ok(());
+            }
+            install_log(&format!("launch: 发送启动指令，尝试 {attempt}/3"));
+            self.install_session.send_install_packet(&Frame { frame_type: 0x03, seq: 0, payload: payload.clone() })?;
+            let deadline = Instant::now() + Duration::from_secs(4);
+            while Instant::now() < deadline {
+                if crate::live::device_connection_epoch() != epoch || !self.install_session.is_linked() {
+                    return Err("连接已变化，取消本次快应用启动".into());
+                }
+                if crate::live::nexo_app_activity() != activity {
+                    install_log("launch: Nexo 快应用已响应启动");
+                    return Ok(());
+                }
+                std::thread::sleep(Duration::from_millis(100));
+            }
+        }
+        Err("已发送启动指令，但未收到 Nexo 响应，请保持手环亮屏后重试连接".into())
+    }
+
     pub fn remove_quick_app(&mut self, package: &str) -> Result<()> {
         let apps = self.fetch_quick_apps()?;
         let app = apps.iter().find(|a| a.package_name == package).ok_or("应用已不存在")?;
@@ -720,6 +754,13 @@ impl XiaomiInstallTransport {
         set_install_pipeline_active(false);
         result
     }
+    pub fn launch_quick_app(&mut self, package: &str) -> Result<()> {
+        set_install_pipeline_active(true);
+        let result = self.bridge.launch_quick_app(package);
+        set_install_pipeline_active(false);
+        result
+    }
+
     pub fn remove_quick_app(&mut self, package: &str) -> Result<()> {
         set_install_pipeline_active(true);
         let result = self.bridge.remove_quick_app(package);

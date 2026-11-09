@@ -1,4 +1,4 @@
-import { Minus, Moon, Settings2, Square, Sun, X } from 'lucide-react';
+import { Cable, Minus, Moon, Settings, Square, Sun, X } from 'lucide-react';
 import { APP_NAME } from '../../../common/app-info';
 import appIcon from '../../../../assets/desktop-mark.svg';
 
@@ -8,9 +8,12 @@ export interface TopBarProps {
   onNavigate: (page: 'settings') => void;
   settingsActive?: boolean;
   updateAvailable?: boolean;
+  hooksConfigured: boolean;
+  hooksActive?: boolean;
+  onOpenHooks: () => void;
 }
 
-export function TopBar({ theme, onThemeChange, onNavigate, settingsActive, updateAvailable }: TopBarProps) {
+export function TopBar({ theme, onThemeChange, onNavigate, settingsActive, updateAvailable, hooksConfigured, hooksActive, onOpenHooks }: TopBarProps) {
   return <header className="workspace-titlebar titlebar-drag">
     <div className="workspace-brand">
       <img src={appIcon} className="nexo-mark" alt="" aria-hidden="true" />
@@ -23,8 +26,13 @@ export function TopBar({ theme, onThemeChange, onNavigate, settingsActive, updat
         onClick={() => onThemeChange(theme === 'light' ? 'dark' : 'light')}>
         {theme === 'light' ? <Sun size={20} strokeWidth={1.6} /> : <Moon size={20} strokeWidth={1.6} />}
       </button>
+      <button type="button" className="workspace-icon-button workspace-hooks-button" data-active={hooksActive}
+        aria-label={hooksConfigured ? '连接必备，配置已写入' : '连接必备，尚未配置'} title={hooksConfigured ? '连接必备 · 配置已写入' : '连接必备 · 待配置'}
+        aria-haspopup="dialog" aria-expanded={hooksActive || false} onClick={onOpenHooks}>
+        <Cable size={21} strokeWidth={1.6} />{!hooksConfigured && <span className="nexo-update-dot" aria-hidden="true" />}
+      </button>
       <button type="button" className="workspace-icon-button workspace-settings-button" aria-label={updateAvailable ? '打开设置，有新版本' : '打开设置'} data-active={settingsActive} title={updateAvailable ? '设置 · 有新版本' : '设置'}
-        onClick={() => onNavigate('settings')}><Settings2 size={20} strokeWidth={1.6} />{updateAvailable && <span className="nexo-update-dot" aria-hidden="true" />}</button>
+        onClick={() => onNavigate('settings')}><Settings size={21} strokeWidth={1.6} />{updateAvailable && <span className="nexo-update-dot" aria-hidden="true" />}</button>
       <div className="workspace-window-controls">
         <button type="button" className="nexo-window-button" aria-label="最小化" title="最小化" onClick={() => window.pulse?.minimizeWindow()}><Minus size={16} /></button>
         <button type="button" className="nexo-window-button" aria-label="最大化" title="最大化" onClick={() => window.pulse?.maximizeWindow()}><Square size={14} /></button>

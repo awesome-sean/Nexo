@@ -4,8 +4,8 @@ export const DETAIL_WIDTH = 300;
 export const DETAIL_HEIGHT = 88;
 export const DETAIL_GAP = 8;
 export const MINIBAR_MENU_WIDTH = DETAIL_WIDTH;
-export const MINIBAR_MENU_VERTICAL_HEIGHT = 660;
-export const MINIBAR_MENU_HORIZONTAL_HEIGHT = 780;
+export const MINIBAR_MENU_VERTICAL_HEIGHT = 740;
+export const MINIBAR_MENU_HORIZONTAL_HEIGHT = 860;
 
 // Distance is measured from the visible capsule, in Windows logical pixels.
 export function getMiniBarEdgeInset(edgeGap: number, renderScale: number): number {

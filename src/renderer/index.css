@@ -2059,3 +2059,47 @@ html.screen-minibar #root {
 }
 
 .nexo-update-links { display: flex; align-items: center; gap: 18px; }
+
+.workspace-saved-config { display: flex; align-items: center; gap: 8px; margin-top: 26px; color: var(--text-secondary); font-size: 14px; line-height: 1.7; }
+.workspace-saved-config svg { flex-shrink: 0; color: var(--data-secondary); }
+.workspace-band-page > .nexo-update-card { margin-top: 24px; }
+
+.nexo-app--workspace .workspace-header-actions .workspace-icon-button { position: relative; border: 0; border-radius: 0; background: transparent; width: 40px; height: 40px; }
+.nexo-app--workspace .workspace-header-actions .workspace-icon-button:hover,
+.nexo-app--workspace .workspace-header-actions .workspace-icon-button[data-active="true"] { background: transparent; color: var(--data-secondary); }
+.workspace-hooks-button .nexo-update-dot { position: absolute; width: 7px; height: 7px; top: 5px; right: 5px; }
+.nexo-hooks-dialog { width: min(800px, calc(100vw - 64px)); max-height: calc(100vh - 80px); margin: auto; padding: 30px; border: 1px solid var(--border-default); border-radius: 28px; background: var(--bg-surface); color: var(--text-primary); box-shadow: 0 28px 90px rgb(0 0 0 / 20%); overflow-y: auto; }
+.nexo-hooks-dialog::backdrop { background: rgb(12 12 18 / 42%); }
+.nexo-hooks-dialog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border-default); margin-bottom: 24px; }
+.nexo-hooks-dialog-header h2 { display: flex; align-items: center; gap: 12px; font-size: 25px; font-weight: 600; }
+.nexo-hooks-dialog-header p { margin-top: 10px; color: var(--text-secondary); font-size: 15px; }
+.nexo-hooks-close { display: grid; place-items: center; flex-shrink: 0; width: 36px; height: 36px; background: transparent; border: 0; color: var(--text-secondary); cursor: pointer; }
+.nexo-hooks-close:hover { color: var(--text-primary); }
+.nexo-hooks-dialog .workspace-hooks-card { border: 0; box-shadow: none; padding: 0; margin: 0; border-radius: 0; }
+.nexo-hooks-dialog .workspace-hook-action { margin-top: 20px; gap: 24px; }
+.nexo-hooks-dialog .workspace-hook-action > p { max-width: 340px; }
+.nexo-hooks-dialog .workspace-hook-help { padding-top: 18px; margin-top: 20px; border-top: 1px solid var(--border-default); }
+.nexo-hooks-dialog .workspace-expression-states { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.nexo-hooks-dialog .workspace-expression-guide { margin-top: 18px; }
+
+.minibar-context-menu { font-size: 18px; padding: 12px; }
+.minibar-context-menu .nexo-floating-menu-button { font-size: 18px; font-weight: 500; min-height: 44px; padding: 10px 12px; }
+.minibar-context-menu .nexo-menu-group { border-block: 1px solid rgb(128 128 138 / 20%); padding: 12px; margin: 8px 0; }
+.minibar-context-menu .nexo-menu-group + .nexo-menu-group { border-top: 0; padding-top: 4px; }
+.nexo-menu-group h4 { font-size: 13px; font-weight: 500; opacity: .6; margin-bottom: 10px; }
+.minibar-context-menu .nexo-floating-menu-section { border: 0; padding: 0; margin: 14px 0; font-size: 18px; }
+.nexo-floating-menu-section > label { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 8px; }
+.nexo-floating-menu-section strong { font-size: inherit; font-weight: 500; }
+.minibar-context-menu .minibar-slider { display: block; width: 100%; }
+.minibar-context-menu .nexo-floating-menu-check { padding: 0; min-height: 40px; justify-content: space-between; font-size: 18px; font-weight: 400; }
+.nexo-menu-appearance { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 4px; border: 1px solid rgb(128 128 138 / 20%); border-radius: 12px; }
+.nexo-menu-appearance button { display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 8px; min-height: 36px; font-size: 18px; cursor: pointer; }
+.nexo-menu-appearance button[aria-pressed="true"] { background: rgb(190 154 240 / 20%); color: #C5A1EF; }
+.minibar-context-menu[data-appearance="light"] .nexo-menu-appearance button[aria-pressed="true"] { color: #754DA4; }
+
+.minibar-context-menu { --menu-range-track: #45444E; --menu-range-fill: #BD9BE8; }
+.minibar-context-menu[data-appearance="light"] { --menu-range-track: #D6D3DF; --menu-range-fill: #8B65B6; }
+.minibar-context-menu input.minibar-slider { height: 24px; min-height: 24px; margin: 0; padding: 0; background: transparent; border: 0; cursor: pointer; }
+.minibar-context-menu .minibar-slider::-webkit-slider-runnable-track { height: 6px; border: 0; border-radius: 999px; background: linear-gradient(to right, var(--menu-range-fill) 0%, var(--menu-range-fill) var(--menu-range-progress, 0%), var(--menu-range-track) var(--menu-range-progress, 0%), var(--menu-range-track) 100%); }
+.minibar-context-menu .minibar-slider::-webkit-slider-thumb { width: 16px; height: 16px; margin-top: -5px; border: 2px solid var(--menu-range-fill); background: #FFF; box-shadow: 0 1px 4px rgb(0 0 0 / 25%); }
+.minibar-context-menu .minibar-slider:focus-visible { outline: 2px solid var(--menu-range-fill); outline-offset: 3px; }

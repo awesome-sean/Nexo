@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { Sliders, EyeOff, ChevronLeft } from 'lucide-react';
+import { Sliders, EyeOff, ChevronLeft, Sun, Moon } from 'lucide-react';
 import type { MinibarState } from '../../../common/types';
 import { useMiniBarSettings } from '../../hooks/useMiniBarSettings';
 import { MiniBarDock } from './MiniBarDock';
@@ -326,7 +326,7 @@ export const MiniBar: React.FC<MiniBarProps> = ({ theme = 'dark' }) => {
     const expandedWidth = 456;
     const expandedHeight = isHorizontal ? MINIBAR_MENU_HORIZONTAL_HEIGHT : MINIBAR_MENU_VERTICAL_HEIGHT;
     const menuX = isHorizontal ? (expandedWidth - MINIBAR_MENU_WIDTH) / 2 : isLeftDock ? 128 : 16;
-    const menuY = isHorizontal ? (dockAtTop ? 124 : 16) : Math.max(16, Math.min(relY - 24, expandedHeight - 620));
+    const menuY = isHorizontal ? (dockAtTop ? 124 : 16) : Math.max(16, Math.min(relY - 24, expandedHeight - 700));
 
     setContextMenu({
       visible: true,
@@ -346,25 +346,30 @@ export const MiniBar: React.FC<MiniBarProps> = ({ theme = 'dark' }) => {
       <button type="button" className="nexo-floating-menu-button" onClick={() => { closeContextMenu(); void window.pulse?.openMiniBarSettings(); }}>
         <Sliders size={19} />打开个性化设置
       </button>
-      <div className="nexo-floating-menu-section">
-        <label className="flex justify-between mb-2" htmlFor="minibar-menu-opacity"><span>背景透明度</span><span>{Math.round((1 - bgOpacity) * 100)}%</span></label>
-        <input id="minibar-menu-opacity" aria-label="背景透明度" type="range" min="0" max="100" step="1"
-          value={Math.round((1 - bgOpacity) * 100)} onChange={(event) => handleOpacityChange(1 - Number(event.target.value) / 100)} className="w-full minibar-slider cursor-pointer" />
-      </div>
-      <div className="nexo-floating-menu-section">
-        <label className="flex justify-between my-2" htmlFor="minibar-menu-scale"><span>胶囊大小</span><span>{Math.round(preferences.capsuleScale*100)}%</span></label>
-        <input id="minibar-menu-scale" type="range" min="75" max="150" step="5" value={Math.round(preferences.capsuleScale*100)} onChange={event => void updatePreferences({capsuleScale:Number(event.target.value)/100})} className="w-full minibar-slider" />
-      </div>
-      <label className="nexo-floating-menu-check px-2 text-[11px]">
-        <span>显示任务文字</span><input type="checkbox" checked={preferences.showStatusText} onChange={event => void updatePreferences({ showStatusText: event.target.checked })} />
-      </label>
-      <div className="nexo-floating-menu-section">
-        <label className="flex justify-between my-2" htmlFor="minibar-menu-edge-gap"><span>边缘距离</span><span>{preferences.edgeGap}px</span></label>
-        <input id="minibar-menu-edge-gap" type="range" min="0" max="64" step="1" value={preferences.edgeGap} onChange={event => void updatePreferences({ edgeGap: Number(event.target.value) })} className="w-full minibar-slider" />
-      </div>
-      <label className="nexo-floating-menu-check px-2 text-[11px]">
-        <span>边缘标签悬停展开</span><input type="checkbox" checked={preferences.hoverReveal} onChange={(event) => void updatePreferences({ hoverReveal: event.target.checked })} />
-      </label>
+      <section className="nexo-menu-group" aria-label="外观与显示">
+        <h4>外观与显示</h4>
+        <div className="nexo-menu-appearance" role="group" aria-label="悬浮窗外观">
+          <button type="button" aria-pressed={preferences.appearance === 'light'} onClick={() => void updatePreferences({ appearance: 'light' })}><Sun size={17} />浅色</button>
+          <button type="button" aria-pressed={preferences.appearance === 'dark'} onClick={() => void updatePreferences({ appearance: 'dark' })}><Moon size={17} />深色</button>
+        </div>
+        <div className="nexo-floating-menu-section">
+          <label htmlFor="minibar-menu-opacity"><span>背景透明度</span><strong>{Math.round((1 - bgOpacity) * 100)}%</strong></label>
+          <input id="minibar-menu-opacity" style={{ '--menu-range-progress': Math.round((1 - bgOpacity) * 100) + '%' } as React.CSSProperties} aria-label="背景透明度" type="range" min="0" max="100" step="1" value={Math.round((1 - bgOpacity) * 100)} onChange={event => handleOpacityChange(1 - Number(event.target.value) / 100)} className="minibar-slider" />
+        </div>
+        <div className="nexo-floating-menu-section">
+          <label htmlFor="minibar-menu-scale"><span>胶囊大小</span><strong>{Math.round(preferences.capsuleScale * 100)}%</strong></label>
+          <input id="minibar-menu-scale" style={{ '--menu-range-progress': ((preferences.capsuleScale - 0.75) / 0.75 * 100) + '%' } as React.CSSProperties} type="range" min="75" max="150" step="5" value={Math.round(preferences.capsuleScale * 100)} onChange={event => void updatePreferences({ capsuleScale: Number(event.target.value) / 100 })} className="minibar-slider" />
+        </div>
+        <label className="nexo-floating-menu-check"><span>显示任务文字</span><input type="checkbox" checked={preferences.showStatusText} onChange={event => void updatePreferences({ showStatusText: event.target.checked })} /></label>
+      </section>
+      <section className="nexo-menu-group" aria-label="停靠与交互">
+        <h4>停靠与交互</h4>
+        <div className="nexo-floating-menu-section">
+          <label htmlFor="minibar-menu-edge-gap"><span>边缘距离</span><strong>{preferences.edgeGap} px</strong></label>
+          <input id="minibar-menu-edge-gap" style={{ '--menu-range-progress': (preferences.edgeGap / 64 * 100) + '%' } as React.CSSProperties} type="range" min="0" max="64" step="1" value={preferences.edgeGap} onChange={event => void updatePreferences({ edgeGap: Number(event.target.value) })} className="minibar-slider" />
+        </div>
+        <label className="nexo-floating-menu-check"><span>边缘标签悬停展开</span><input type="checkbox" checked={preferences.hoverReveal} onChange={event => void updatePreferences({ hoverReveal: event.target.checked })} /></label>
+      </section>
       <button type="button" className="nexo-floating-menu-button" onClick={handleCollapseToEdgeTab}><ChevronLeft size={19} />收起为边缘标签</button>
       <button type="button" className="nexo-floating-menu-button text-rose-300" onClick={handleClose}><EyeOff size={19} />隐藏悬浮窗</button>
       {preferencesError && <p role="alert" className="px-2 text-[10px] text-rose-300">{preferencesError}</p>}

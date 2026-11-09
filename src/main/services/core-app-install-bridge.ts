@@ -133,6 +133,10 @@ export class CoreAppInstallBridge {
     }
   }
 
+  async launchNexoApp(): Promise<void> {
+    await this.client.call('device.app.launch', { package: 'com.codeisland.band' }, 30_000);
+  }
+
   async cancel(sessionId: string): Promise<CoreCancelResult> {
     try {
       return await this.client.call<CoreCancelResult>('device.app.install.cancel', { sessionId });

@@ -59,6 +59,23 @@ pub fn build_installed_list_query() -> Vec<u8> {
     encode_installed_list_query()
 }
 
+/// Remote launch protocol: WearPacket type=20/id=4, ThirdpartyApp field6.
+/// Field definitions verified against AstroBox-NG-Module-Pb wear_thirdparty_app.proto.
+pub fn build_quick_app_launch(app: &InstalledApp, uri: &str) -> Result<Vec<u8>> {
+    if app.package_name.is_empty() || app.fingerprint.is_empty() {
+        return Err("启动应用缺少包名或签名指纹".into());
+    }
+    let mut basic = Vec::new();
+    write_string_field(&mut basic, 1, &app.package_name);
+    write_bytes_field(&mut basic, 2, &app.fingerprint);
+    let mut launch = Vec::new();
+    write_bytes_field(&mut launch, 1, &basic);
+    write_string_field(&mut launch, 2, uri);
+    Ok(WearPacket::new_thirdparty_app(4, ThirdpartyApp {
+        payload: Some(ThirdpartyAppPayload::Raw(6, launch)),
+    }).encode())
+}
+
 /// 编码已安装列表响应（仅供离线测试与 Mock 使用，字段顺序与真机抓包一致）。
 #[allow(dead_code)]
 pub fn encode_installed_list_response(apps: &[InstalledApp]) -> Vec<u8> {
@@ -203,6 +220,22 @@ pub fn installed_list_contains(
 mod tests {
     use super::*;
     use super::super::l2::L2Packet;
+
+    #[test]
+    fn test_launch_uses_verified_protocol_fields() {
+        let mut app = InstalledApp::new("com.codeisland.band", 3);
+        assert!(build_quick_app_launch(&app, "").is_err());
+        app.fingerprint = vec![0xAB; 20];
+        let bytes = build_quick_app_launch(&app, "").unwrap();
+        let packet = WearPacket::decode(&bytes).unwrap();
+        assert_eq!(packet.id, 4);
+        assert_eq!(packet.pkt_type, WearPacketType::ThirdpartyApp);
+        let Some(WearPacketPayload::ThirdpartyApp(payload)) = packet.payload else { panic!("missing payload") };
+        let Some(ThirdpartyAppPayload::Raw(6, launch)) = payload.payload else { panic!("missing launch") };
+        let fields = parse_fields(&launch).unwrap();
+        assert!(fields.iter().any(|field| field.tag == 1));
+        assert!(fields.iter().any(|field| field.tag == 2));
+    }
 
     #[test]
     fn test_query_is_type20_id0() {

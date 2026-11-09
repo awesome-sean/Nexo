@@ -70,6 +70,7 @@ export class PulseCoreBridge {
   private connectionGeneration = 0;
   private connectTask: Promise<{ ok: boolean; error?: string; device?: unknown }> | null = null;
   private detached = false;
+  private appLaunchAttempted = false;
 
   constructor(private client: PulseCoreClient, getBandSettings?: () => BandSettings) {
     this.responder = new DirectFetchBridge(client, {
@@ -125,6 +126,7 @@ export class PulseCoreBridge {
       void this.refreshDaemonHealth();
     });
     c.on('disconnected', () => {
+      this.appLaunchAttempted = false;
       this.state.daemon.rpcConnected = false;
       this.state.connection = { state: 'disconnected' };
       this.push();
@@ -211,6 +213,7 @@ export class PulseCoreBridge {
   }
 
   private stopAutoConnect(): void {
+    this.appLaunchAttempted = false;
     this.autoConnect = false;
     this.connectionGeneration++;
     this.client.clearBandConnectionIntent();
@@ -344,6 +347,18 @@ export class PulseCoreBridge {
     ipcMain.handle('pulse:format-diagnostic-report', (_e, report) => formatDiagnosticReport(report));
   }
 
+  private openBandAppAfterConnect(): void {
+    if (this.state.connection.state !== 'connected') {
+      this.appLaunchAttempted = false;
+      return;
+    }
+    if (this.detached || this.appLaunchAttempted) return;
+    this.appLaunchAttempted = true;
+    void this.client.call('device.app.launch', { package: BAND_PACKAGE }, 30_000).catch((error) => {
+      pushError('device', '自动打开 Nexo 快应用失败（连接保持）: ' + (error?.message ?? error), 'warn');
+    });
+  }
+
   /** 把 daemon 的设备状态映射成 UI 的连接态（不含 authkey） */
   private applyDeviceState(s: Record<string, unknown>): void {
     this.state.device = safeDevice(s.currentDevice as DeviceWire);
@@ -358,6 +373,7 @@ export class PulseCoreBridge {
         : protocolState === 'error'
           ? { state: 'error', error }
           : { state: 'disconnected' };
+    this.openBandAppAfterConnect();
     this.scheduleReconnect();
     this.push();
   }
@@ -376,6 +392,7 @@ export class PulseCoreBridge {
           : protocolState === 'error'
           ? { state: 'error', error: status?.error }
           : { state: 'disconnected' };
+      this.openBandAppAfterConnect();
     } catch {
       /* RPC 未连上时保持当前状态 */
     }

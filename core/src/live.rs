@@ -13,6 +13,19 @@ use aes::Aes128;
 use ctr::Ctr128BE;
 
 use std::time::Duration;
+use std::sync::atomic::{AtomicU64, Ordering};
+
+static DEVICE_CONNECTION_EPOCH: AtomicU64 = AtomicU64::new(0);
+static NEXO_APP_ACTIVITY: AtomicU64 = AtomicU64::new(0);
+
+pub fn device_connection_epoch() -> u64 { DEVICE_CONNECTION_EPOCH.load(Ordering::SeqCst) }
+pub fn nexo_app_activity() -> u64 { NEXO_APP_ACTIVITY.load(Ordering::SeqCst) }
+
+fn record_nexo_app_activity(package: &str) {
+    if package == "com.codeisland.band" {
+        NEXO_APP_ACTIVITY.fetch_add(1, Ordering::SeqCst);
+    }
+}
 
 use crate::frame::{decode, encode, Frame};
 use crate::rfcomm;
@@ -754,6 +767,7 @@ fn run_pump_loop(core: &Core, sock: usize, dec_key: &[u8; 16], rx: &mut Vec<u8>)
                             ));
                         }
                         if let Ok(Some(up)) = parse_uplink(&plain) {
+                            record_nexo_app_activity(&up.basic.package_name);
                             {
                                 let mut bt = core.bt.lock().unwrap();
                                 if let Some(ctx) = bt.as_mut() {
@@ -789,6 +803,7 @@ fn run_pump_loop(core: &Core, sock: usize, dec_key: &[u8; 16], rx: &mut Vec<u8>)
                                 core.log(&format!("数据泵上行 tag={tag:?} (脱敏)"));
                             }
                         } else if let Ok(Some(basic)) = parse_app_status_request(&plain) {
+                            record_nexo_app_activity(&basic.package_name);
                             core.log("数据泵上行 id=6 状态查询 → 应答 id=7 CONNECTED");
                             let pl = build_app_status_payload(&basic);
                             let mut bt = core.bt.lock().unwrap();
@@ -945,12 +960,14 @@ pub fn run_live(core: &Core) -> Result<(), String> {
                 let mut bt = core.bt.lock().unwrap();
                 *bt = Some(ctx);
             }
+            DEVICE_CONNECTION_EPOCH.fetch_add(1, Ordering::SeqCst);
             *core.live_state.lock().unwrap() = LiveStatus::Ready;
             broadcast_device_state(core, "ready", false, "");
 
             let pump_err = run_pump_loop(core, sock, &dec_key, &mut rx);
             core.log(&format!("live: 业务数据泵退出 (原因: {pump_err})"));
 
+            DEVICE_CONNECTION_EPOCH.fetch_add(1, Ordering::SeqCst);
             // 安装运行时收尾：关闭派发门禁并清空残留入站事件。
             // 生产安装传输（Core.install）持有的 Core.bt 共享句柄会自动看到连接已释放。
             crate::install::xiaomi::runtime_bridge::on_live_pump_exit();

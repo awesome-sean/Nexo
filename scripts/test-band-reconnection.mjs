@@ -157,3 +157,32 @@ test('Bluetooth message send failures are contained while the next handshake can
   failing=false;client.emit('device.interconnect',packet);await flush();assert.equal(sent,1);
   bridge.stop();
 });
+
+test('opens Nexo once after authentication and again after a genuine reconnect', async () => {
+  const f = fixture();
+  await f.bridge.connectBand('manual-connect');
+  assert.equal(f.client.calls.filter(m => m === 'device.app.launch').length, 0);
+  f.client.status = { connected: true, protocolState: 'ready' };
+  f.client.emit('device.state', { state: { protocolState: 'ready' } });
+  await flush();
+  f.client.emit('device.state', { state: { protocolState: 'ready' } });
+  await f.poll();
+  assert.equal(f.client.calls.filter(m => m === 'device.app.launch').length, 1);
+  f.client.emit('device.state', { state: { protocolState: 'disconnected' } });
+  f.client.emit('device.state', { state: { protocolState: 'ready' } });
+  await flush();
+  assert.equal(f.client.calls.filter(m => m === 'device.app.launch').length, 2);
+  f.bridge.detach();
+});
+
+test('an already authenticated device opens Nexo without requiring a new Bluetooth connection', async () => {
+  const f = fixture();
+  f.client.emit('device.state', { state: { protocolState: 'ready' } });
+  await flush();
+  assert.equal(f.client.calls.filter(method => method === 'device.app.launch').length, 1);
+  assert.equal(f.client.calls.filter(method => method === 'device.connect').length, 0);
+  f.client.emit('device.state', { state: { protocolState: 'ready' } });
+  await flush();
+  assert.equal(f.client.calls.filter(method => method === 'device.app.launch').length, 1);
+  f.bridge.detach();
+});

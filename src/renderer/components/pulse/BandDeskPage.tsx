@@ -6,8 +6,8 @@ import type { UseBandConnectionResult } from '../../hooks/useBandConnection';
 import type { QuotaDisplay } from '../../hooks/useQuotaDisplay';
 import { Band9Preview } from './Band9Preview';
 import { BandIllustration } from './BandIllustration';
-import { CodexHooksCard } from './CodexHooksCard';
 import { QuickAppPage } from './QuickAppPage';
+import { BandAppUpdateSection } from './BandAppUpdateSection';
 
 type DeviceConfigStatus = Awaited<ReturnType<NonNullable<Window['pulse']>['getDeviceConfigStatus']>>;
 
@@ -72,7 +72,8 @@ export function BandDeskPage({ quota, display, connection, setupOpen, onStartSet
   };
 
   const connect = () => {
-    onStartSetup(0);
+    if (configured) void connection.connect();
+    else onStartSetup(0);
   };
 
   return <div className="workspace-band-page">
@@ -109,13 +110,14 @@ export function BandDeskPage({ quota, display, connection, setupOpen, onStartSet
           </div>
         </div> : <div className="workspace-pairing-guide">
           <span className="workspace-pairing-icon"><Watch size={29} strokeWidth={1.5} /></span>
-          <h4>配置手环</h4>
-          <p>三个步骤，开启桌面联动</p>
+          <h4>{configured ? deviceName : '配置手环'}</h4>
+          <p>{configured ? '连接资料已保存，下次一键连接' : '首次使用，三个步骤完成配置'}</p>
           <ol>
-            <li><FileText size={18} /><span>AstroBox 或手机日志导入</span></li>
-            <li><Bluetooth size={18} /><span>连接蓝牙手环</span></li>
-            <li><PackageCheck size={18} /><span>安装 Nexo 快应用</span></li>
+            {!configured && <li><FileText size={18} /><span>导入手环资料</span></li>}
+            <li><Bluetooth size={18} /><span>{configured ? '点击下方按钮连接手环' : '连接蓝牙手环'}</span></li>
+            <li><PackageCheck size={18} /><span>{configured ? '已安装 Nexo 时自动打开' : '安装后立即打开 Nexo'}</span></li>
           </ol>
+          {configured && <div className="workspace-saved-config"><CircleDot size={15} /><span>更新快应用可在连接后单独操作</span></div>}
         </div>}
         {(connection.error || configError) && <p className="workspace-inline-error" role="alert"><AlertCircle size={16} />{connection.error || configError}</p>}
         <div className="workspace-device-actions">
@@ -128,7 +130,7 @@ export function BandDeskPage({ quota, display, connection, setupOpen, onStartSet
         </div>
       </section>
     </div>
-    <CodexHooksCard />
+    <BandAppUpdateSection />
     <QuickAppPage embedded />
   </div>;
 }

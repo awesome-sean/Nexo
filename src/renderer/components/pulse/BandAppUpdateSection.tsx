@@ -32,6 +32,7 @@ export function BandAppUpdateSection() {
   useEffect(() => {
     let active = true;
     setInstalled(undefined);
+    setNotice('');
     if (connected && bundled?.packageId && bridge) {
       void bridge.quickApps.list().then(result => {
         if (active) setInstalled(result.apps.find(app => app.package_name === bundled.packageId)?.version_code ?? null);
@@ -66,13 +67,13 @@ export function BandAppUpdateSection() {
   else if (busy) status = `正在安装 ${percentage}%`;
   else if (connected && installed === undefined) status = '正在读取手环版本…';
   else if (connected && installed === null) status = '手环尚未安装 Nexo';
-  else if (connected) status = needsUpdate ? '有可用的快应用更新' : '手环已安装当前或更新版本';
+  else if (connected) status = needsUpdate ? '有可用的快应用更新' : '已安装 Nexo，连接后自动打开';
   return <section className="nexo-floating-settings-card nexo-update-card">
-    <header><h3><PackageCheck size={22} />手环快应用</h3><span className="nexo-update-version">{bundled?.versionName || '读取中'}</span></header>
+    <header><h3><PackageCheck size={22} />手环快应用</h3><span className="nexo-update-version">{bundled?.versionName ? 'v' + bundled.versionName : '读取中'}</span></header>
     <p className="nexo-update-source">{installed != null ? (installed === bundled?.versionCode ? `已安装 v${bundled.versionName}` : installed === 2 ? '已安装 v1.0.1' : installed === 1 ? '已安装 v1.0.0' : '已读取手环版本') : '使用新版 Nexo 随附的快应用'}</p>
-    <div className="nexo-update-status"><strong role="status">{status}</strong><button type="button" className="nexo-update-action" disabled={!connected || !needsUpdate || busy} onClick={() => void upgrade()}><PackageCheck size={18} />{installed === null ? '安装快应用' : '升级快应用'}</button></div>
+    <div className="nexo-update-status"><strong role="status">{status}</strong>{connected && (needsUpdate || busy) && <button type="button" className="nexo-update-action" disabled={!connected || !needsUpdate || busy} onClick={() => void upgrade()}><PackageCheck size={18} />{installed === null ? '安装快应用' : '升级快应用'}</button>}</div>
     {busy && <progress className="nexo-update-progress" max={100} value={percentage} aria-label="快应用安装进度" />}
     {notice && <p role="status" className="nexo-update-notice">{notice}</p>}
-    <footer><p>先升级电脑端，再通过蓝牙覆盖升级手环快应用。</p><button type="button" disabled={!connected || busy} onClick={() => { setNotice(''); setRefreshKey(key => key + 1); }}><RefreshCw size={16} />刷新版本</button></footer>
+    <footer><p>{!connected ? '连接后自动检查安装状态，日常使用无需重复配置。' : installed === null ? '安装完成后立即打开快应用。' : needsUpdate ? '现有版本可继续使用，升级完成后自动打开。' : '每次重连后自动打开，已有版本无需重复安装。'}</p><button type="button" disabled={!connected || busy} onClick={() => { setNotice(''); setRefreshKey(key => key + 1); }}><RefreshCw size={16} />刷新版本</button></footer>
   </section>;
 }
