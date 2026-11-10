@@ -5,6 +5,7 @@
   </picture>
   <h1>Nexo</h1>
   <p>通过 Windows 桌面悬浮窗或小米手环桌搭，查看 ChatGPT/Codex 额度与任务状态。</p>
+  <p>开源项目持续更新中，欢迎关注与反馈。</p>
 </div>
 
 <p align="center">
