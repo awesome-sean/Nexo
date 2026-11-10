@@ -87,6 +87,8 @@
 3. 在 Codex 中审核并信任 Nexo 状态灯命令。Codex CLI 可运行 `/hooks`，桌面端按 Hooks 审核提示操作。
 4. 重新开始 Codex 会话，并保持 Nexo 在后台运行。
 
+更多配置方法和命令请查看 [命令行与进阶说明](NEXO-README.md)。
+
 ### Windows 桌面悬浮窗
 
 1. 在 Nexo 选择「Windows 悬浮窗」，打开「桌面悬浮窗」标题旁的「显示」开关。
@@ -124,8 +126,6 @@
 - **电脑端**：在「设置 → 关于 Nexo」检查更新，下载并校验后按 Windows 安装向导操作；失败时可选择浏览器下载。个人设置与绑定保存在本机。
 - **手环快应用**：保持手环连接，在「设置 → 关于 Nexo」覆盖升级，也可手动安装 RPK。
 
-[命令行与进阶说明](NEXO-README.md) · [源码构建](docs/BUILDING.md)
-
 ## 支持设备
 
 Windows x64，需要电脑蓝牙。适配小米手环 **9 / 10 / 11 标准版和 NFC 版**。小米手环 9 标准版已实机确认，其他型号尚未实机检验。
@@ -136,7 +136,7 @@ Windows x64，需要电脑蓝牙。适配小米手环 **9 / 10 / 11 标准版和
 
 ## 源码与许可
 
-Electron、React、TypeScript、Rust 与 Xiaomi Vela。构建步骤见 [构建说明](docs/BUILDING.md)。
+Electron、React、TypeScript、Rust 与 Xiaomi Vela。构建步骤见 [源码构建](docs/BUILDING.md)。
 
 代码采用 [MIT License](LICENSE)。字体、标识、设备图片和表情素材的来源与授权范围见 [素材说明](NOTICE.md) 和 [第三方许可](assets/THIRD-PARTY-LICENSES.txt)。
 
