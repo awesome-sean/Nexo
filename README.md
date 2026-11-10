@@ -21,10 +21,12 @@
 
 ## 版本更新
 
-| 应用 | 当前版本 | 发布页 |
+| 应用 | 当前版本 | 发行页 |
 | --- | --- | --- |
-| 电脑应用程序 · Windows | **v1.0.4** | [电脑应用程序发布页](docs/releases/desktop.md) |
-| 手环快应用 · 小米手环 | **v1.0.2** | [手环快应用发布页](docs/releases/band.md) |
+| 电脑应用程序 · Windows | **v1.0.4** | [电脑端 v1.0.4 发行页](https://github.com/awesome-sean/Nexo/releases/tag/v1.0.4) |
+| 手环快应用 · 小米手环 | **v1.0.2** | [手环快应用 v1.0.2 发行页](https://github.com/awesome-sean/Nexo/releases/tag/v1.0.2) |
+
+[查看所有版本](https://github.com/awesome-sean/Nexo/releases)
 
 ## 主要功能
 
