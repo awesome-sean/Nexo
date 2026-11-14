@@ -45,6 +45,45 @@ function page(screenBehavior, vibrationBehavior) {
   return { context, page: context.page, screenRequests, vibrations, sent, connection, timers, timerDelays, intervals, runTimer, runTimerAt };
 }
 
+test('repeated foreground events reuse timers and hide releases them', () => {
+  const f = page();
+  f.page.onShow();
+  const timers = f.timers.size;
+  const intervals = f.intervals.size;
+  f.page.onShow();
+  f.page.onShow();
+  assert.equal(f.timers.size, timers);
+  assert.equal(f.intervals.size, intervals);
+  assert.equal(f.screenRequests.length, 1);
+  f.page.onHide();
+  assert.equal(f.timers.size, 0);
+  assert.equal(f.intervals.size, 0);
+  f.page.onShow();
+  assert.equal(f.intervals.size, intervals);
+  f.page.onDestroy();
+  assert.equal(f.intervals.size, 0);
+});
+
+test('companion disconnect keeps the local page alive and retries with backoff', () => {
+  const f = page();
+  f.page.onShow();
+  f.runTimerAt(2000);
+  const intervals = f.intervals.size;
+  f.connection.onclose({code:1006});
+  assert.equal(f.intervals.size, intervals);
+  assert.equal(f.screenRequests.at(-1), true);
+  assert.equal(vm.runInContext('visible', f.context), true);
+  assert.equal(vm.runInContext('ready', f.context), false);
+  assert.equal(vm.runInContext('connection', f.context), null);
+  const sent = f.sent.length;
+  f.page.refresh();
+  assert.equal(f.sent.length, sent);
+  vm.runInContext('nextTransportAttemptAt = 0', f.context);
+  f.page.refresh();
+  assert.equal(f.sent.length, sent + 1);
+  f.page.onDestroy();
+});
+
 test('Band page handshakes, renders remaining quota, and blocks duplicate requests', () => {
   const { page: p, sent, connection, runTimer } = page();
   p.onShow();
@@ -82,8 +121,13 @@ test('Stale data and missing windows display unknown, with timers stopped on hid
 });
 
 test('Failed handshake times out and can retry', () => {
-  const { page: p, sent, runTimer } = page();
+  const { page: p, sent, runTimer, context } = page();
+  context.clock = Date.now();
+  vm.runInContext('Date.now = () => clock', context);
   p.onShow(); runTimer(); runTimer();
+  p.refresh();
+  assert.equal(sent.length, 1);
+  context.clock += 5000;
   p.refresh();
   assert.equal(sent.length, 2);
   assert.equal(sent[1].tag, '__hs__');
@@ -111,13 +155,16 @@ test('right swipe exits only twice within two seconds and resets across taps, hi
 });
 
 test('duplicate handshake cannot remove the active fetch timeout or stall recovery', () => {
-  const { page: p, sent, connection, runTimer, runTimerAt, timers } = page();
+  const { page: p, sent, connection, runTimer, runTimerAt, timers, context } = page();
+  context.clock = Date.now();
+  vm.runInContext('Date.now = () => clock', context);
   p.onShow(); runTimer();
   connection.onmessage({ data: { tag: '__hs__' } });
   assert.equal(sent.at(-1).tag, 'fetch');
   connection.onmessage({ data: { tag: '__hs__' } });
   assert.equal(timers.size, 1);
   runTimerAt(6000);
+  context.clock += 5000;
   p.refresh();
   assert.equal(sent.at(-1).tag, '__hs__');
   connection.onmessage({ data: { tag: '__hs__' } });
@@ -126,7 +173,9 @@ test('duplicate handshake cannot remove the active fetch timeout or stall recove
 });
 
 test('transport errors reopen on the automatic five-second recovery tick and ignore late callbacks', () => {
-  const { page: p, sent, connection, runTimer, intervals, timers } = page();
+  const { page: p, sent, connection, runTimer, intervals, timers, context } = page();
+  context.clock = Date.now();
+  vm.runInContext('Date.now = () => clock', context);
   p.onShow(); runTimer();
   const oldMessage = connection.onmessage;
   const oldError = connection.onerror;
@@ -134,7 +183,7 @@ test('transport errors reopen on the automatic five-second recovery tick and ign
   connection.onerror();
   assert.equal(timers.size, 0);
   const tick = [...intervals.values()].find(item => item.delay === 1000).fn;
-  for (let i=0; i<5; i++) tick();
+  for (let i=0; i<5; i++) { context.clock += 1000; tick(); }
   assert.equal(sent.at(-1).tag, '__hs__');
   connection.onmessage({ data: { tag: '__hs__' } });
   const count = sent.length;

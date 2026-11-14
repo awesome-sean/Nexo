@@ -158,7 +158,7 @@ test('Bluetooth message send failures are contained while the next handshake can
   bridge.stop();
 });
 
-test('opens Nexo once after authentication and again after a genuine reconnect', async () => {
+test('opens Nexo once and suppresses rapid relaunches after a reboot or flapping link', async () => {
   const f = fixture();
   await f.bridge.connectBand('manual-connect');
   assert.equal(f.client.calls.filter(m => m === 'device.app.launch').length, 0);
@@ -168,6 +168,11 @@ test('opens Nexo once after authentication and again after a genuine reconnect',
   f.client.emit('device.state', { state: { protocolState: 'ready' } });
   await f.poll();
   assert.equal(f.client.calls.filter(m => m === 'device.app.launch').length, 1);
+  f.client.emit('device.state', { state: { protocolState: 'disconnected' } });
+  f.client.emit('device.state', { state: { protocolState: 'ready' } });
+  await flush();
+  assert.equal(f.client.calls.filter(m => m === 'device.app.launch').length, 1);
+  f.bridge.lastAppLaunchAt = Date.now() - 120_001;
   f.client.emit('device.state', { state: { protocolState: 'disconnected' } });
   f.client.emit('device.state', { state: { protocolState: 'ready' } });
   await flush();

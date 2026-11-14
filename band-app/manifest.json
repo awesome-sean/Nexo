@@ -1,8 +1,8 @@
 {
   "package": "com.codeisland.band",
   "name": "Nexo",
-  "versionName": "1.0.2",
-  "versionCode": 3,
+  "versionName": "1.0.3",
+  "versionCode": 4,
   "minPlatformVersion": 1000,
   "icon": "/common/icon-nexo-100.png",
   "features": [

@@ -16,16 +16,16 @@
 </p>
 
 - **Windows 桌面悬浮窗**。下载并安装电脑端 EXE 即可使用。<br>
-  最新 EXE 下载地址　[https://github.com/awesome-sean/Nexo/releases/download/v1.0.4/Nexo-Setup-1.0.4.exe](https://github.com/awesome-sean/Nexo/releases/download/v1.0.4/Nexo-Setup-1.0.4.exe)
+  最新 EXE 下载地址　[https://github.com/awesome-sean/Nexo/releases/download/v1.0.5/Nexo-Setup-1.0.5.exe](https://github.com/awesome-sean/Nexo/releases/download/v1.0.5/Nexo-Setup-1.0.5.exe)
 - **小米手环横屏桌搭**。需要电脑端 EXE 和手环 RPK，连接后联动使用。<br>
-  最新 RPK 下载地址　[https://github.com/awesome-sean/Nexo/releases/download/v1.0.2/Nexo-Band-1.0.2.rpk](https://github.com/awesome-sean/Nexo/releases/download/v1.0.2/Nexo-Band-1.0.2.rpk)
+  最新 RPK 下载地址　[https://github.com/awesome-sean/Nexo/releases/download/band-v1.0.3/Nexo-Band-1.0.3.rpk](https://github.com/awesome-sean/Nexo/releases/download/band-v1.0.3/Nexo-Band-1.0.3.rpk)
 
 ## 版本更新
 
 | 应用 | 当前版本 | 发行页 |
 | --- | --- | --- |
-| 电脑应用程序 · Windows | **v1.0.4** | [电脑端 v1.0.4 发行页](https://github.com/awesome-sean/Nexo/releases/tag/v1.0.4) |
-| 手环快应用 · 小米手环 | **v1.0.2** | [手环快应用 v1.0.2 发行页](https://github.com/awesome-sean/Nexo/releases/tag/v1.0.2) |
+| 电脑应用程序 · Windows | **v1.0.5** | [电脑端 v1.0.5 发行页](https://github.com/awesome-sean/Nexo/releases/tag/v1.0.5) |
+| 手环快应用 · 小米手环 | **v1.0.3** | [手环快应用 v1.0.3 发行页](https://github.com/awesome-sean/Nexo/releases/tag/band-v1.0.3) |
 
 [查看所有版本](https://github.com/awesome-sean/Nexo/releases)
 
@@ -76,7 +76,7 @@
 
 ### 安装并启动 Nexo
 
-1. 下载并安装 [电脑端 EXE v1.0.4](https://github.com/awesome-sean/Nexo/releases/download/v1.0.4/Nexo-Setup-1.0.4.exe)。
+1. 下载并安装 [电脑端 EXE v1.0.5](https://github.com/awesome-sean/Nexo/releases/download/v1.0.5/Nexo-Setup-1.0.5.exe)。
 2. 打开 Nexo，并在电脑上登录 ChatGPT。
 
 ### 开启任务状态联动（共用）
@@ -100,7 +100,7 @@
 
 ### 小米手环桌搭
 
-需要 [电脑端 EXE v1.0.4](https://github.com/awesome-sean/Nexo/releases/download/v1.0.4/Nexo-Setup-1.0.4.exe)、[手环 RPK v1.0.2](https://github.com/awesome-sean/Nexo/releases/download/v1.0.2/Nexo-Band-1.0.2.rpk) 和电脑蓝牙。
+需要 [电脑端 EXE v1.0.5](https://github.com/awesome-sean/Nexo/releases/download/v1.0.5/Nexo-Setup-1.0.5.exe)、[手环 RPK v1.0.3](https://github.com/awesome-sean/Nexo/releases/download/band-v1.0.3/Nexo-Band-1.0.3.rpk) 和电脑蓝牙。
 
 1. 用小米运动健康完成手环账号绑定；电脑开启蓝牙并登录 ChatGPT。
 2. 在 Nexo「手环桌搭」点击「连接手环」，选择导入方式：
@@ -120,7 +120,7 @@
 
 等待处理时也可双击返回时间页；任务继续后会自动返回。振动可在「连接必备 → 手环提醒与表情」关闭，需电脑端与快应用使用配套版本。具体振动时长由手环决定。
 
-**连接异常**：让手环靠近电脑并保持亮屏，暂停手机同步并断开 AstroBox 等其他连接，再重试；可在「设置 → 运行诊断」查看状态。退出 Nexo 或关闭电脑后同步停止，重新启动后需手动连接。
+**连接异常**：让手环靠近电脑并保持亮屏，暂停手机同步并断开 AstroBox 等其他连接，再重试；可在「设置 → 运行诊断」查看状态。退出 Nexo 或关闭电脑后同步停止，快应用会继续显示本地时间和表情，过期额度显示未知值。重新启动 Nexo 后需手动连接；两分钟内频繁重连会跳过自动唤起，可在手环上手动打开。
 
 ## 更新
 

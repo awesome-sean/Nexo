@@ -359,6 +359,8 @@ let lastTapAt = null;
 let waitingForApproval = false;
 let completionViewUntil = 0;
 let completionServerExpiry = null;
+let nextTransportAttemptAt = 0;
+let transportRetryMs = 5000;
 
 function keepScreenAwake(enabled) {
   try {
@@ -482,6 +484,9 @@ export default {
     this.updateDisplay();
   },
   onShow() {
+    // Launch requests may deliver onShow again without a matching onHide.
+    // Keep the existing transport and timers instead of leaking another set.
+    if (visible) return;
     visible = true;
     lastBackAt = null;
     lastTapAt = null;
@@ -526,6 +531,8 @@ export default {
     tick = null;
     startup = null;
     this.resetTransport();
+    nextTransportAttemptAt = 0;
+    transportRetryMs = 5000;
   },
   exitApp() { this.stop(); router.back(); },
   onBackPress() {
@@ -740,14 +747,18 @@ export default {
     timeout = null;
     pendingId = '';
     ready = false;
+    // Losing the companion only affects data sync, never the foreground page.
+    nextTransportAttemptAt = Date.now() + transportRetryMs;
+    transportRetryMs = Math.min(60000, transportRetryMs * 2);
     if (connection) {
       connection.onmessage = function () {};
       connection.onerror = function () {};
+      connection.onclose = function () {};
     }
     connection = null;
   },
   openTransport() {
-    if (!visible) return;
+    if (!visible || Date.now() < nextTransportAttemptAt) return;
     try {
       connection = interconnect.instance();
       const generation = ++transportGeneration;
@@ -764,6 +775,8 @@ export default {
             clearTimeout(timeout);
             timeout = null;
             ready = true;
+            nextTransportAttemptAt = 0;
+            transportRetryMs = 5000;
             this.refresh();
           } else if (packet.tag === 'fetch' && packet.id === pendingId) {
             clearTimeout(timeout);
@@ -783,6 +796,11 @@ export default {
         } catch (error) { this.resetTransport(); }
       };
       connection.onerror = () => { if (visible && generation === transportGeneration) this.resetTransport(); };
+      connection.onclose = () => {
+        if (!visible || generation !== transportGeneration) return;
+        this.resetTransport();
+        this.updateDisplay();
+      };
       this.handshake();
     } catch (error) { this.resetTransport(); }
   },

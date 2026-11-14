@@ -71,6 +71,7 @@ export class PulseCoreBridge {
   private connectTask: Promise<{ ok: boolean; error?: string; device?: unknown }> | null = null;
   private detached = false;
   private appLaunchAttempted = false;
+  private lastAppLaunchAt: number | null = null;
 
   constructor(private client: PulseCoreClient, getBandSettings?: () => BandSettings) {
     this.responder = new DirectFetchBridge(client, {
@@ -354,6 +355,13 @@ export class PulseCoreBridge {
     }
     if (this.detached || this.appLaunchAttempted) return;
     this.appLaunchAttempted = true;
+    // A reboot or a flapping link must not create a rapid launch/reboot loop.
+    const now = Date.now();
+    if (this.lastAppLaunchAt !== null && now - this.lastAppLaunchAt < 120_000) {
+      pushError('device', '连接恢复过于频繁，已跳过本次自动打开快应用，可在手环上手动打开 Nexo。', 'warn');
+      return;
+    }
+    this.lastAppLaunchAt = now;
     void this.client.call('device.app.launch', { package: BAND_PACKAGE }, 30_000).catch((error) => {
       pushError('device', '自动打开 Nexo 快应用失败（连接保持）: ' + (error?.message ?? error), 'warn');
     });
