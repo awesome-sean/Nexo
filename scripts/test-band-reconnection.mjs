@@ -141,6 +141,44 @@ test('quota fetch failures retry within sixty seconds and resume live data after
   assert.equal(collector.getQuotas().codex.authoritative,true);
 });
 
+test('fresh Codex log quota remains usable while RPC fails, without refreshing old timestamps', async () => {
+  let now=1_000_000;
+  let timestamp=now-1000;
+  let limitId='codex';
+  class Clock extends Date {static now(){return now;}}
+  const module={exports:{}};
+  vm.runInNewContext(compile('src/main/services/quota-collector.ts'),{module,exports:module.exports,Date:Clock,process,
+    require(name){
+      if(name==='node:fs') return {
+        existsSync:()=>true,
+        readdirSync:()=>[{name:'rollout-quota.jsonl',isDirectory:()=>false}],
+        statSync:()=>({mtimeMs:now}),
+        readFileSync:()=>JSON.stringify({timestamp:new Date(timestamp).toISOString(),payload:{rate_limits:{limit_id:limitId,primary:{used_percent:2,window_minutes:300,resets_at:10000},secondary:{used_percent:22,window_minutes:10080,resets_at:20000}}}}),
+      };
+      if(name==='./codex-daily-usage') return {CodexDailyUsage:class {getSnapshot(){return null;}}};
+      if(name==='./error-log') return {pushError(){}};
+      if(name==='./codex-rate-limits') return {};
+      return require(name);
+    },
+  });
+  const make=()=>new module.exports.QuotaCollector(async()=>{throw new Error('offline');});
+  const collector=make();
+  let quota=collector.getQuotas().codex;
+  assert.equal(quota.pct5h,2);
+  assert.equal(quota.pct7d,22);
+  assert.equal(quota.authoritative,true);
+  assert.equal(quota.sampledAt,timestamp);
+  now+=300001;
+  quota=collector.getQuotas().codex;
+  assert.equal(quota.authoritative,false);
+  assert.equal(quota.pct5h,null);
+  timestamp=now;limitId='other';
+  assert.equal(make().getQuotas().codex.authoritative,false);
+  limitId='codex';timestamp=now+61000;
+  assert.equal(make().getQuotas().codex.authoritative,false);
+  await flush();
+});
+
 test('Bluetooth message send failures are contained while the next handshake can recover', async () => {
   const module={exports:{}}, errors=[];
   vm.runInNewContext(compile('src/main/services/fetch-bridge-direct.ts'),{module,exports:module.exports,Buffer,Date,

@@ -67,7 +67,7 @@ function formatLongCountdown(ms: number): string {
 }
 
 
-function findLatestCodexRateLimits(): { primary?: CodexWindow; secondary?: CodexWindow } | null {
+function findLatestCodexRateLimits(): { ts: number; primary?: CodexWindow; secondary?: CodexWindow } | null {
   const root = path.join(process.env.CODEX_HOME || path.join(os.homedir(), '.codex'), 'sessions');
   if (!fs.existsSync(root)) return null;
 
@@ -109,7 +109,9 @@ function findLatestCodexRateLimits(): { primary?: CodexWindow; secondary?: Codex
         const entry = JSON.parse(lines[i]);
         const rl = entry.payload?.rate_limits;
         if (!rl?.primary) continue;
+        if (rl.limit_id && rl.limit_id !== 'codex') continue;
         const ts = new Date(entry.timestamp).getTime();
+        if (!Number.isFinite(ts)) continue;
         if (!best || ts > best.ts) {
           best = { ts, primary: rl.primary, secondary: rl.secondary };
         }
@@ -139,7 +141,8 @@ export class QuotaCollector {
     const now=Date.now();
     if(this.cache && now-this.lastFetchTime<5000) return this.cache;
     this.refresh(now);
-    const stored=this.live || this.fromLog(now);
+    const logged=!this.live || now-this.live.at>=300000 ? this.fromLog(now) : null;
+    const stored=logged && (!this.live || logged.at>this.live.at) ? logged : this.live;
     const primary=stored?.primary && stored.primary.resetMs>now ? stored.primary : {pct:null,resetMs:0};
     const secondary=stored?.secondary && stored.secondary.resetMs>now ? stored.secondary : {pct:null,resetMs:0};
     const codex:AgentQuota={
@@ -147,7 +150,7 @@ export class QuotaCollector {
       reset7dText:secondary.resetMs ? formatLongCountdown(secondary.resetMs-now) : null,
       pct5h:primary.pct,pct7d:secondary.pct,level5h:getLevel(primary.pct),level7d:getLevel(secondary.pct),
       used5h:primary.pct ?? 0,used7d:secondary.pct ?? 0,limit5h:100,limit7d:100,unit:'percent',
-      authoritative:!!this.live && now-this.live.at<300000,sampledAt:this.live?.at,
+      authoritative:!!stored && now-stored.at>=-60000 && now-stored.at<300000,sampledAt:stored?.at,
       reset5hAt:primary.pct===null ? null : primary.resetMs,reset7dAt:secondary.pct===null ? null : secondary.resetMs,
     };
     this.cache={codex,updatedAt:now,dailyUsage:this.dailyUsage.getSnapshot(now)};
@@ -156,14 +159,14 @@ export class QuotaCollector {
   }
   private fromLog(now:number): LiveQuota | null {
     const limits=findLatestCodexRateLimits();
-    if(!limits) return null;
+    if(!limits || now-limits.ts < -60000 || now-limits.ts >= 300000) return null;
     const read=(minutes:number):WindowState=>{
       const window=[limits.primary,limits.secondary].find(value=>value?.window_minutes===minutes);
       return window && Number.isFinite(window.used_percent) && window.resets_at*1000>now
         ? {pct:Math.min(100,Math.max(0,Math.round(window.used_percent))),resetMs:window.resets_at*1000}
         : {pct:null,resetMs:0};
     };
-    return {primary:read(300),secondary:read(10080),at:0};
+    return {primary:read(300),secondary:read(10080),at:limits.ts};
   }
   private refresh(now:number):void {
     const used=this.live ? Math.max(this.live.primary.pct ?? 0,this.live.secondary.pct ?? 0) : 0;
